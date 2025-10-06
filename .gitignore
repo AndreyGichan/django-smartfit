@@ -1,0 +1,44 @@
+# Python / Django
+backend/.venv/
+backend/__pycache__/
+*.pyc
+*.sqlite3
+.env
+
+# IDE
+.vscode/
+
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+coverage/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+venv/
+*/venv/
