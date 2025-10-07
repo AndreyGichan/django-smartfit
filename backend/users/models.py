@@ -1,8 +1,8 @@
 import uuid
 from django.db import models
-
-
 from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
+
+from django_smartfit.constants import LEVEL_CHOICES, GOAL_CHOICES, TRAINING_TYPE_CHOICES, GENDER_CHOICES
 
 class CustomUserManager(UserManager):
     def _create_user(self, name, email, password, **extra_fields):
@@ -28,29 +28,6 @@ class CustomUserManager(UserManager):
     
 
 class User(AbstractBaseUser, PermissionsMixin):
-    GENDER_CHOICES= [
-        ('male', 'Мужской'),
-        ('female', 'Женский'),
-
-    ]
-    LEVEL_CHOICES = [
-        ('beginner', 'Начинающий'),
-        ('intermediate', 'Средний'),
-        ('advanced', 'Продвинутый'),
-    ]
-
-    GOAL_CHOICES = [
-        ('weight_loss', 'Похудение'),
-        ('muscle_gain', 'Набор массы'),
-        ('endurance', 'Выносливость'),
-        ('maintenance', 'Поддержание формы'),
-    ]
-
-    TRAINING_TYPE_CHOICES = [
-        ('home', 'Дом'),    
-        ('gym', 'Зал'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=120, blank=True, null=True)
