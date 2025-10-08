@@ -97,6 +97,7 @@ INSTALLED_APPS = [
     'users',
     'exercises',
     'programs',
+    'workouts',
 ]
 
 MIDDLEWARE = [
