@@ -1,104 +1,141 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Play, Info } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import apiService from "@/services/apiService"
 
-const exercises = {
-  chest: [
-    {
-      id: 1,
-      name: "Жим штанги лежа",
-      description: "Базовое упражнение для развития грудных мышц",
-      difficulty: "Средний",
-      muscleGroup: "Грудь",
-      equipment: "Штанга, скамья",
-      image: "/bench-press-exercise.png",
-      animation: "/bench-press-animation.png",
-      technique: [
-        "Лягте на скамью, ноги упираются в пол",
-        "Возьмите штангу хватом чуть шире плеч",
-        "Опустите штангу к груди, локти под углом 45°",
-        "Выжмите штангу вверх, не отрывая лопатки",
-      ],
-    },
-    {
-      id: 2,
-      name: "Отжимания",
-      description: "Классическое упражнение с собственным весом",
-      difficulty: "Начальный",
-      muscleGroup: "Грудь",
-      equipment: "Нет",
-      image: "/push-ups-exercise.png",
-      animation: "/push-ups-animation.jpg",
-      technique: [
-        "Примите упор лежа, руки на ширине плеч",
-        "Тело образует прямую линию",
-        "Опуститесь вниз, сгибая локти",
-        "Вернитесь в исходное положение",
-      ],
-    },
-  ],
-  back: [
-    {
-      id: 3,
-      name: "Подтягивания",
-      description: "Лучшее упражнение для спины",
-      difficulty: "Средний",
-      muscleGroup: "Спина",
-      equipment: "Турник",
-      image: "/pull-ups-exercise.png",
-      animation: "/pull-ups-animation.jpg",
-      technique: [
-        "Возьмитесь за перекладину хватом сверху",
-        "Подтянитесь, сводя лопатки",
-        "Подбородок выше перекладины",
-        "Плавно опуститесь вниз",
-      ],
-    },
-    {
-      id: 4,
-      name: "Тяга штанги в наклоне",
-      description: "Базовое упражнение для толщины спины",
-      difficulty: "Средний",
-      muscleGroup: "Спина",
-      equipment: "Штанга",
-      image: "/barbell-row.png",
-      animation: "/barbell-row-animation.jpg",
-      technique: [
-        "Наклонитесь вперед, спина прямая",
-        "Возьмите штангу хватом сверху",
-        "Подтяните штангу к поясу",
-        "Сведите лопатки в верхней точке",
-      ],
-    },
-  ],
-  legs: [
-    {
-      id: 5,
-      name: "Приседания со штангой",
-      description: "Король упражнений для ног",
-      difficulty: "Средний",
-      muscleGroup: "Ноги",
-      equipment: "Штанга",
-      image: "/barbell-squat.png",
-      animation: "/barbell-squat-animation.jpg",
-      technique: [
-        "Штанга на верхней части спины",
-        "Ноги на ширине плеч",
-        "Присядьте до параллели с полом",
-        "Вернитесь в исходное положение",
-      ],
-    },
-  ],
+// const exercises = {
+//   chest: [
+//     {
+//       id: 1,
+//       name: "Жим штанги лежа",
+//       description: "Базовое упражнение для развития грудных мышц",
+//       difficulty: "Средний",
+//       muscleGroup: "Грудь",
+//       equipment: "Штанга, скамья",
+//       image: "/bench-press-exercise.png",
+//       animation: "/bench-press-animation.png",
+//       technique: [
+//         "Лягте на скамью, ноги упираются в пол",
+//         "Возьмите штангу хватом чуть шире плеч",
+//         "Опустите штангу к груди, локти под углом 45°",
+//         "Выжмите штангу вверх, не отрывая лопатки",
+//       ],
+//     },
+//     {
+//       id: 2,
+//       name: "Отжимания",
+//       description: "Классическое упражнение с собственным весом",
+//       difficulty: "Начальный",
+//       muscleGroup: "Грудь",
+//       equipment: "Нет",
+//       image: "/push-ups-exercise.png",
+//       animation: "/push-ups-animation.jpg",
+//       technique: [
+//         "Примите упор лежа, руки на ширине плеч",
+//         "Тело образует прямую линию",
+//         "Опуститесь вниз, сгибая локти",
+//         "Вернитесь в исходное положение",
+//       ],
+//     },
+//   ],
+//   back: [
+//     {
+//       id: 3,
+//       name: "Подтягивания",
+//       description: "Лучшее упражнение для спины",
+//       difficulty: "Средний",
+//       muscleGroup: "Спина",
+//       equipment: "Турник",
+//       image: "/pull-ups-exercise.png",
+//       animation: "/pull-ups-animation.jpg",
+//       technique: [
+//         "Возьмитесь за перекладину хватом сверху",
+//         "Подтянитесь, сводя лопатки",
+//         "Подбородок выше перекладины",
+//         "Плавно опуститесь вниз",
+//       ],
+//     },
+//     {
+//       id: 4,
+//       name: "Тяга штанги в наклоне",
+//       description: "Базовое упражнение для толщины спины",
+//       difficulty: "Средний",
+//       muscleGroup: "Спина",
+//       equipment: "Штанга",
+//       image: "/barbell-row.png",
+//       animation: "/barbell-row-animation.jpg",
+//       technique: [
+//         "Наклонитесь вперед, спина прямая",
+//         "Возьмите штангу хватом сверху",
+//         "Подтяните штангу к поясу",
+//         "Сведите лопатки в верхней точке",
+//       ],
+//     },
+//   ],
+//   legs: [
+//     {
+//       id: 5,
+//       name: "Приседания со штангой",
+//       description: "Король упражнений для ног",
+//       difficulty: "Средний",
+//       muscleGroup: "Ноги",
+//       equipment: "Штанга",
+//       image: "/barbell-squat.png",
+//       animation: "/barbell-squat-animation.jpg",
+//       technique: [
+//         "Штанга на верхней части спины",
+//         "Ноги на ширине плеч",
+//         "Присядьте до параллели с полом",
+//         "Вернитесь в исходное положение",
+//       ],
+//     },
+//   ],
+// }
+
+const muscleLabels: Record<string, string> = {
+  chest: "Грудь",
+  back: "Спина",
+  legs: "Ноги",
+  arms: "Руки",
+  shoulders: "Плечи",
+  core: "Пресс",
 }
 
-export function ExercisesSection() {
-  const [selectedExercise, setSelectedExercise] = useState<any>(null)
+const difficultyLabels: Record<string, string> = {
+  beginner: "Начальный",
+  medium: "Средний",
+  advanced: "Продвинутый",
+}
+
+interface Exercise {
+  id: string
+  name: string
+  description: string
+  muscle_group: string
+  equipment_needed?: string
+  image?: string | null
+  video?: string | null
+  technique?: string[] | null
+  difficulty?: string
+}
+
+export function ExercisesSection({ initialData }: { initialData: Record<string, Exercise[]> }) {
+  const [exercises] = useState(initialData)
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
+
+  if (!Object.keys(exercises).length) {
+    return (
+      <section className="py-16 text-center">
+        <p className="text-muted-foreground">Нет доступных упражнений</p>
+      </section>
+    )
+  }
 
   return (
     <section id="exercises" className="py-16 md:py-24 bg-muted/30">
@@ -108,31 +145,37 @@ export function ExercisesSection() {
             Библиотека упражнений
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
-            Изучай правильную технику выполнения с анимациями и подробными инструкциями
+            Изучай правильную технику выполнения упражнений
           </p>
         </div>
 
-        <Tabs defaultValue="chest" className="w-full">
+        <Tabs defaultValue={Object.keys(exercises)[0] || "chest"} className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
-            <TabsTrigger value="chest">Грудь</TabsTrigger>
-            <TabsTrigger value="back">Спина</TabsTrigger>
-            <TabsTrigger value="legs">Ноги</TabsTrigger>
+            {Object.keys(exercises).map((group) => (
+              <TabsTrigger key={group} value={group}>
+                {muscleLabels[group] || group}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {Object.entries(exercises).map(([category, exerciseList]) => (
-            <TabsContent key={category} value={category}>
+          {Object.entries(exercises).map(([group, list]) => (
+            <TabsContent key={group} value={group}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {exerciseList.map((exercise) => (
+                {list.map((exercise) => (
                   <Card key={exercise.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
                     <div className="relative h-48 overflow-hidden bg-muted">
                       <img
-                        src={exercise.image || "/placeholder.svg"}
+                        src={
+                          exercise.image
+                            ? `${process.env.NEXT_PUBLIC_API_HOST}${exercise.image}`
+                            : "/placeholder.svg"
+                        }
                         alt={exercise.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground">
-                        {exercise.difficulty}
+                        {exercise.difficulty ? difficultyLabels[exercise.difficulty] || exercise.difficulty : ""}
                       </Badge>
                       <Button
                         size="icon"
@@ -148,7 +191,7 @@ export function ExercisesSection() {
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">{exercise.equipment}</span>
+                        <span className="text-sm text-muted-foreground">{exercise.equipment_needed || "Без оборудования"}</span>
                         <Button variant="ghost" size="sm" onClick={() => setSelectedExercise(exercise)}>
                           <Info className="h-4 w-4 mr-2" />
                           Техника
@@ -172,36 +215,55 @@ export function ExercisesSection() {
             {selectedExercise && (
               <div className="space-y-6">
                 <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted">
-                  <img
-                    src={selectedExercise.animation || "/placeholder.svg"}
-                    alt={`${selectedExercise.name} animation`}
-                    className="w-full h-full object-cover"
-                  />
+                  {selectedExercise.video ? (
+                    <video
+                      src={`${process.env.NEXT_PUBLIC_API_HOST}${selectedExercise.video}`}
+                      controls
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <img
+                      src={selectedExercise.image ? `${process.env.NEXT_PUBLIC_API_HOST}${selectedExercise.image}` : "/placeholder.svg"}
+                      alt={selectedExercise.name}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Сложность</p>
-                    <Badge variant="secondary">{selectedExercise.difficulty}</Badge>
+                    <Badge variant="secondary">
+                      {selectedExercise.difficulty ? difficultyLabels[selectedExercise.difficulty] || selectedExercise.difficulty : ""}
+                    </Badge>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Оборудование</p>
-                    <p className="text-sm font-medium">{selectedExercise.equipment}</p>
+                    <p className="text-sm font-medium">
+                      {selectedExercise.equipment_needed || "Без оборудования"}
+                    </p>
                   </div>
                 </div>
 
+
+
                 <div>
                   <h3 className="font-semibold mb-3">Правильная техника выполнения:</h3>
-                  <ol className="space-y-2">
-                    {selectedExercise.technique.map((step: string, index: number) => (
-                      <li key={index} className="flex gap-3">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                          {index + 1}
-                        </span>
-                        <span className="text-sm leading-relaxed pt-0.5">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
+                  {selectedExercise.technique && selectedExercise.technique.length > 0 ? (
+                    <ol className="space-y-2">
+                      {selectedExercise.technique.map((step: string, index: number) => (
+                        <li key={index} className="flex gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm leading-relaxed pt-0.5">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Техника пока не добавлена</p>
+                  )}
+
                 </div>
               </div>
             )}

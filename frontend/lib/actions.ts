@@ -83,7 +83,7 @@ export async function getAccessToken(): Promise<string | undefined> {
   let accessToken = cookieStore.get('session_access_token')?.value;
 
   if (!accessToken) {
-    accessToken = await handleRefresh(); // теперь string | undefined
+    accessToken = await handleRefresh(); 
   }
 
   return accessToken;
