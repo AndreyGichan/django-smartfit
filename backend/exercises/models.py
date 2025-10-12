@@ -27,3 +27,6 @@ class Exercise(models.Model):
     video = models.FileField(upload_to="exercises/videos/", blank=True, null=True)
     technique = models.JSONField(blank=True, null=True)
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default="beginner")
+
+    def __str__(self):
+        return self.name

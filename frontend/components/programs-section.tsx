@@ -45,6 +45,28 @@ const programs = [
   },
 ]
 
+
+interface Program {
+  id: string
+  name: string
+  description: string
+  level: string
+  goal?: string
+  training_type?: string | null
+  video?: string | null
+  technique?: string[] | null
+  difficulty?: string
+}
+
+
+const iconMap: Record<string, any> = {
+  "Похудение": Flame,
+  "Набор массы": Target,
+  "Выносливость": Heart,
+  "Поддержание формы": Zap,
+}
+
+
 export function ProgramsSection() {
   return (
     <section id="programs" className="py-16 md:py-24">

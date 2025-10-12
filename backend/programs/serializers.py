@@ -1,37 +1,68 @@
 from rest_framework import serializers
 from exercises.serializers import ExerciseSerializer
-from .models import Program
+from .models import Program, ProgramWorkout, ProgramWorkoutExercise
+
+
+class ProgramWorkoutExerciseSerializer(serializers.ModelSerializer):
+    exercise = ExerciseSerializer(read_only=True)
+    exercise_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = ProgramWorkoutExercise
+        fields = ['id', 'exercise', 'exercise_id', 'sets', 'reps', 'weight']
+
+
+class ProgramWorkoutSerializer(serializers.ModelSerializer):
+    exercises = ProgramWorkoutExerciseSerializer(many=True)
+
+    class Meta:
+        model = ProgramWorkout
+        fields = ['id', 'name', 'order', 'exercises']
+
+    def create(self, validated_data):
+        exercises_data = validated_data.pop('exercises', [])
+        workout = ProgramWorkout.objects.create(**validated_data)
+        for ex_data in exercises_data:
+            ProgramWorkoutExercise.objects.create(
+                workout=workout,
+                exercise_id=ex_data['exercise_id'],
+                sets=ex_data.get('sets'),
+                reps=ex_data.get('reps'),
+                weight=ex_data.get('weight')
+            )
+        return workout
 
 
 class ProgramSerializer(serializers.ModelSerializer):
-    exercises = ExerciseSerializer(many=True, read_only=True)
+    workouts = ProgramWorkoutSerializer(many=True, read_only=True)
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'exercises']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'workouts']
 
 
 class ProgramCreateSerializer(serializers.ModelSerializer):
-    exercise_ids = serializers.ListField(
-        child=serializers.UUIDField(), write_only=True, required=False
-    )
+    exercises = ProgramWorkoutSerializer(many=True, write_only=True)
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'exercise_ids']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'workouts']
 
     def create(self, validated_data):
-        exercise_ids = validated_data.pop('exercise_ids', [])
+        workouts_data = validated_data.pop('workouts', [])
         program = Program.objects.create(**validated_data)
-        if exercise_ids:
-            program.exercises.set(exercise_ids)
-        return program
+        
+        for workout_data in workouts_data:
+            exercises_data = workout_data.pop('exercises', [])
+            workout = ProgramWorkout.objects.create(program=program, **workout_data)
+            for ex_data in exercises_data:
+                ProgramWorkoutExercise.objects.create(
+                    workout=workout,
+                    exercise_id=ex_data['exercise_id'],
+                    sets=ex_data.get('sets'),
+                    reps=ex_data.get('reps'),
+                    weight=ex_data.get('weight')
+                )
 
-    def update(self, instance, validated_data):
-        exercise_ids = validated_data.pop('exercise_ids', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        if exercise_ids is not None:
-            instance.exercises.set(exercise_ids)
-        return instance
+
+        return program

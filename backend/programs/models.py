@@ -11,4 +11,35 @@ class Program(models.Model):
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='beginner')
     goal = models.CharField(max_length=20, choices=GOAL_CHOICES, default='maintenance')
     training_type = models.CharField(max_length=10, choices=TRAINING_TYPE_CHOICES, default='home')
-    exercises = models.ManyToManyField(Exercise, related_name='programs')
+
+    def __str__(self):
+        return self.name
+
+
+class ProgramWorkout(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    program = models.ForeignKey(Program, related_name='program_workouts', on_delete=models.CASCADE)
+    name = models.CharField(max_length=120, blank=True)  
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = ('program', 'order')
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.program.name} — {self.name or f'День {self.order}'}"
+
+
+class ProgramWorkoutExercise(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    workout = models.ForeignKey(ProgramWorkout, related_name='exercises', on_delete=models.CASCADE)
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
+    sets = models.PositiveIntegerField()
+    reps = models.PositiveIntegerField()
+    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('workout', 'exercise')
+
+    def __str__(self):
+        return f"{self.exercise.name} ({self.sets}x{self.reps})"
