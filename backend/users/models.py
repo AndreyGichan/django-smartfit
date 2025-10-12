@@ -33,6 +33,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=120, blank=True, null=True)
 
     age = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True, help_text="Рост в сантиметрах")
+    weight = models.FloatField(null=True, blank=True, help_text="Вес в килограммах")
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, null=True)
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='beginner')
     goal = models.CharField(max_length=20, choices=GOAL_CHOICES, default='maintenance')

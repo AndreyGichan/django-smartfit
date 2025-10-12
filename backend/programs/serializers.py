@@ -34,11 +34,11 @@ class ProgramWorkoutSerializer(serializers.ModelSerializer):
 
 
 class ProgramSerializer(serializers.ModelSerializer):
-    workouts = ProgramWorkoutSerializer(many=True, read_only=True)
+    program_workouts = ProgramWorkoutSerializer(many=True, read_only=True)
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'workouts']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'program_workouts']
 
 
 class ProgramCreateSerializer(serializers.ModelSerializer):
@@ -46,10 +46,10 @@ class ProgramCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'workouts']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'program_workouts']
 
     def create(self, validated_data):
-        workouts_data = validated_data.pop('workouts', [])
+        workouts_data = validated_data.pop('program_workouts', [])
         program = Program.objects.create(**validated_data)
         
         for workout_data in workouts_data:

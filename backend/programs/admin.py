@@ -23,7 +23,7 @@ class ProgramWorkoutAdmin(admin.ModelAdmin):
 
 
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "level", "goal", "training_type")
+    list_display = ("id", "name", "level", "goal", "training_type", 'frequency')
     search_fields = ("name", "goal")
     list_filter = ("level", "goal", "training_type")
     inlines = [ProgramWorkoutInline]

@@ -4,7 +4,7 @@ GENDER_CHOICES = [
 ]
 
 LEVEL_CHOICES = [
-    ('beginner', 'Начинающий'),
+    ('beginner', 'Начальный'),
     ('intermediate', 'Средний'),
     ('advanced', 'Продвинутый'),
 ]
@@ -17,6 +17,6 @@ GOAL_CHOICES = [
 ]
 
 TRAINING_TYPE_CHOICES = [
-    ('home', 'Дом'),
-    ('gym', 'Зал'),
+    ('home', 'Дома'),
+    ('gym', 'В зале'),
 ]
