@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
 
 from django_smartfit.constants import LEVEL_CHOICES, GOAL_CHOICES, TRAINING_TYPE_CHOICES, GENDER_CHOICES
+from programs.models import Program
 
 class CustomUserManager(UserManager):
     def _create_user(self, name, email, password, **extra_fields):
@@ -39,6 +40,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='beginner')
     goal = models.CharField(max_length=20, choices=GOAL_CHOICES, default='maintenance')
     training_type = models.CharField(max_length=10, choices=TRAINING_TYPE_CHOICES, default='home')
+    selected_program = models.ForeignKey(
+        Program,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users_selected",
+        help_text="Выбранная пользователем программа"
+    )
 
     
     is_active = models.BooleanField(default=True)

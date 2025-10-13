@@ -1,49 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Target, Flame, Heart, Zap } from "lucide-react"
-
-const programs = [
-  {
-    id: 1,
-    title: "Похудение",
-    description: "Эффективная программа для сжигания жира и улучшения рельефа",
-    icon: Flame,
-    duration: "8 недель",
-    level: "Начальный",
-    workouts: "4 раза в неделю",
-    image: "/weight-loss-workout.png",
-  },
-  {
-    id: 2,
-    title: "Набор массы",
-    description: "Программа для роста мышечной массы и силовых показателей",
-    icon: Target,
-    duration: "12 недель",
-    level: "Средний",
-    workouts: "5 раз в неделю",
-    image: "/muscle-building-gym.jpg",
-  },
-  {
-    id: 3,
-    title: "Выносливость",
-    description: "Развитие кардио и функциональной выносливости",
-    icon: Heart,
-    duration: "6 недель",
-    level: "Любой",
-    workouts: "3-4 раза в неделю",
-    image: "/cardio-endurance-training.jpg",
-  },
-  {
-    id: 4,
-    title: "Поддержание формы",
-    description: "Сбалансированная программа для поддержания результатов",
-    icon: Zap,
-    duration: "Постоянно",
-    level: "Средний",
-    workouts: "3 раза в неделю",
-    image: "/fitness-maintenance-workout.jpg",
-  },
-]
+import Link from "next/link"
 
 
 interface Program {
@@ -53,21 +12,38 @@ interface Program {
   level: string
   goal?: string
   training_type?: string | null
-  video?: string | null
-  technique?: string[] | null
-  difficulty?: string
+  frequency?: string | null
 }
 
+interface ProgramsSectionProps {
+  programs: Program[]
+}
 
 const iconMap: Record<string, any> = {
-  "Похудение": Flame,
-  "Набор массы": Target,
-  "Выносливость": Heart,
-  "Поддержание формы": Zap,
+  weight_loss: Flame,
+  muscle_gain: Target,
+  endurance: Heart,
+  maintenance: Zap,
 }
 
+const levelLabels: Record<string, string> = {
+  beginner: "Начальный",
+  medium: "Средний",
+  advanced: "Продвинутый",
+}
 
-export function ProgramsSection() {
+const goalLabels: Record<string, string> = {
+  weight_loss: "Похудение",
+  muscle_gain: "Набор массы",
+  endurance: "Выносливость",
+  maintenance: "Поддержание формы",
+}
+
+export function ProgramsSection({ programs }: ProgramsSectionProps) {
+  if (!programs.length) {
+    return <p className="text-center text-muted-foreground py-16">Нет доступных программ</p>
+  }
+
   return (
     <section id="programs" className="py-16 md:py-24">
       <div className="container mx-auto px-4">
@@ -82,41 +58,43 @@ export function ProgramsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           {programs.map((program) => {
-            const Icon = program.icon
+            const Icon = iconMap[program.goal || ""] || Flame
+
             return (
               <Card key={program.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
                 <div className="relative h-48 md:h-56 overflow-hidden bg-muted">
-                  <img
+                  {/* <img
                     src={program.image || "/placeholder.svg"}
                     alt={program.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  /> */}
                   <div className="absolute top-4 left-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary shadow-lg">
                       <Icon className="h-6 w-6 text-primary-foreground" />
                     </div>
                   </div>
+                  <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground">
+                    {program.level ? levelLabels[program.level] || program.level : ""}
+                  </Badge>
                 </div>
                 <CardHeader>
-                  <CardTitle className="text-2xl">{program.title}</CardTitle>
+                  <CardTitle className="text-2xl">{program.name}</CardTitle>
                   <CardDescription className="text-base leading-relaxed">{program.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-2 gap-6 mb-6">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Длительность</p>
-                      <p className="text-sm font-semibold">{program.duration}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Уровень</p>
-                      <p className="text-sm font-semibold">{program.level}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Цель</p>
+                      <p className="text-sm font-semibold">{goalLabels[program.goal || ""] || program.goal}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Частота</p>
-                      <p className="text-sm font-semibold">{program.workouts}</p>
+                      <p className="text-sm font-semibold">{program.frequency || "Не указано"}</p>
                     </div>
                   </div>
-                  <Button className="w-full">Выбрать программу</Button>
+                 <Link href={`/programs/${program.id}`}>
+                    <Button className="w-full">Подробнее</Button>
+                  </Link>
                 </CardContent>
               </Card>
             )

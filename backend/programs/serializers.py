@@ -35,10 +35,17 @@ class ProgramWorkoutSerializer(serializers.ModelSerializer):
 
 class ProgramSerializer(serializers.ModelSerializer):
     program_workouts = ProgramWorkoutSerializer(many=True, read_only=True)
+    is_selected = serializers.SerializerMethodField()
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'program_workouts']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'program_workouts', 'is_selected']
+
+    def get_is_selected(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return user.selected_program_id == obj.id
+        return False
 
 
 class ProgramCreateSerializer(serializers.ModelSerializer):

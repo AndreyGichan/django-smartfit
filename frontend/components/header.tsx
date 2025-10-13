@@ -1,14 +1,16 @@
 "use client"
 
-import { Dumbbell, Menu, X } from "lucide-react"
+import { Dumbbell, Menu, X, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import apiService from "@/services/apiService"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -17,6 +19,12 @@ export function Header() {
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    apiService.get("/api/auth/profile/")
+      .then(() => setIsLoggedIn(true))
+      .catch(() => setIsLoggedIn(false))
   }, [])
 
   const navItems = [
@@ -28,11 +36,10 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        scrolled
-          ? "bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-lg"
-          : "bg-background/60 backdrop-blur-md border-b border-border/20"
-      }`}
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled
+        ? "bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-lg"
+        : "bg-background/60 backdrop-blur-md border-b border-border/20"
+        }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
@@ -51,31 +58,47 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative text-sm font-medium transition-colors group ${
-                  pathname === item.href ? "text-primary" : "text-foreground/80 hover:text-foreground"
-                }`}
+                className={`relative text-sm font-medium transition-colors group ${pathname === item.href ? "text-primary" : "text-foreground/80 hover:text-foreground"
+                  }`}
               >
                 {item.label}
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-primary to-accent transition-all duration-300 ${
-                    pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
+                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-primary to-accent transition-all duration-300 ${pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
                 />
               </Link>
             ))}
 
             <div className="flex items-center gap-3 ml-4">
-              <Link href="/login">
-                <Button variant="ghost" className="hover:bg-primary/10 hover:text-primary">
-                  Вход
-                </Button>
-              </Link>
-              <Link href="/programs">
-              <Button size="sm" className=" group relative overflow-hidden">
-                <span className="relative z-10">Начать</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Button>
-            </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/profile"
+                  className={`relative text-sm font-medium transition-colors group flex items-center gap-2 ${pathname === "/profile" ? "text-primary" : "text-foreground/80 hover:text-foreground"
+                    }`}
+                >
+                  <User className="h-4 w-4" />
+                  Профиль
+                  <span
+                    className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-primary to-accent transition-all duration-300 ${pathname === "/profile" ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                  />
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" className="hover:bg-primary/10 hover:text-primary">
+                      Вход
+                    </Button>
+                  </Link>
+
+                  <Link href="/programs">
+                    <Button size="sm" className=" group relative overflow-hidden">
+                      <span className="relative z-10">Начать</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
 
@@ -96,9 +119,8 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block py-2 text-sm font-medium transition-all hover:translate-x-2 ${
-                  pathname === item.href ? "text-primary" : "text-foreground/80"
-                }`}
+                className={`block py-2 text-sm font-medium transition-all hover:translate-x-2 ${pathname === item.href ? "text-primary" : "text-foreground/80"
+                  }`}
                 onClick={() => setMobileMenuOpen(false)}
                 style={{ animationDelay: `${index * 50}ms` }}
               >

@@ -7,96 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Play, Info } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import apiService from "@/services/apiService"
-
-// const exercises = {
-//   chest: [
-//     {
-//       id: 1,
-//       name: "Жим штанги лежа",
-//       description: "Базовое упражнение для развития грудных мышц",
-//       difficulty: "Средний",
-//       muscleGroup: "Грудь",
-//       equipment: "Штанга, скамья",
-//       image: "/bench-press-exercise.png",
-//       animation: "/bench-press-animation.png",
-//       technique: [
-//         "Лягте на скамью, ноги упираются в пол",
-//         "Возьмите штангу хватом чуть шире плеч",
-//         "Опустите штангу к груди, локти под углом 45°",
-//         "Выжмите штангу вверх, не отрывая лопатки",
-//       ],
-//     },
-//     {
-//       id: 2,
-//       name: "Отжимания",
-//       description: "Классическое упражнение с собственным весом",
-//       difficulty: "Начальный",
-//       muscleGroup: "Грудь",
-//       equipment: "Нет",
-//       image: "/push-ups-exercise.png",
-//       animation: "/push-ups-animation.jpg",
-//       technique: [
-//         "Примите упор лежа, руки на ширине плеч",
-//         "Тело образует прямую линию",
-//         "Опуститесь вниз, сгибая локти",
-//         "Вернитесь в исходное положение",
-//       ],
-//     },
-//   ],
-//   back: [
-//     {
-//       id: 3,
-//       name: "Подтягивания",
-//       description: "Лучшее упражнение для спины",
-//       difficulty: "Средний",
-//       muscleGroup: "Спина",
-//       equipment: "Турник",
-//       image: "/pull-ups-exercise.png",
-//       animation: "/pull-ups-animation.jpg",
-//       technique: [
-//         "Возьмитесь за перекладину хватом сверху",
-//         "Подтянитесь, сводя лопатки",
-//         "Подбородок выше перекладины",
-//         "Плавно опуститесь вниз",
-//       ],
-//     },
-//     {
-//       id: 4,
-//       name: "Тяга штанги в наклоне",
-//       description: "Базовое упражнение для толщины спины",
-//       difficulty: "Средний",
-//       muscleGroup: "Спина",
-//       equipment: "Штанга",
-//       image: "/barbell-row.png",
-//       animation: "/barbell-row-animation.jpg",
-//       technique: [
-//         "Наклонитесь вперед, спина прямая",
-//         "Возьмите штангу хватом сверху",
-//         "Подтяните штангу к поясу",
-//         "Сведите лопатки в верхней точке",
-//       ],
-//     },
-//   ],
-//   legs: [
-//     {
-//       id: 5,
-//       name: "Приседания со штангой",
-//       description: "Король упражнений для ног",
-//       difficulty: "Средний",
-//       muscleGroup: "Ноги",
-//       equipment: "Штанга",
-//       image: "/barbell-squat.png",
-//       animation: "/barbell-squat-animation.jpg",
-//       technique: [
-//         "Штанга на верхней части спины",
-//         "Ноги на ширине плеч",
-//         "Присядьте до параллели с полом",
-//         "Вернитесь в исходное положение",
-//       ],
-//     },
-//   ],
-// }
+import ExerciseModal from "./ExerciseModal"
 
 const muscleLabels: Record<string, string> = {
   chest: "Грудь",
@@ -204,8 +115,8 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
             </TabsContent>
           ))}
         </Tabs>
-
-        <Dialog open={!!selectedExercise} onOpenChange={() => setSelectedExercise(null)}>
+        <ExerciseModal exercise={selectedExercise} onClose={() => setSelectedExercise(null)} />
+        {/* <Dialog open={!!selectedExercise} onOpenChange={() => setSelectedExercise(null)}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl">{selectedExercise?.name}</DialogTitle>
@@ -268,7 +179,7 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
               </div>
             )}
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
     </section>
   )

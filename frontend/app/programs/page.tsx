@@ -1,7 +1,9 @@
 import { Header } from "@/components/header"
 import { ProgramsSection } from "@/components/programs-section"
+import apiService from "@/services/apiService"
 
-export default function ProgramsPage() {
+export default async function ProgramsPage() {
+  const programs = await apiService.get("/api/programs/")
   return (
     <div className="min-h-screen">
       <Header />
@@ -12,7 +14,7 @@ export default function ProgramsPage() {
             Выберите программу, которая соответствует вашим целям и уровню подготовки
           </p>
         </div>
-        <ProgramsSection />
+        <ProgramsSection programs={programs}/>
       </main>
     </div>
   )

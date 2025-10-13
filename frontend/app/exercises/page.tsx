@@ -2,7 +2,7 @@ import { Header } from "@/components/header"
 import { ExercisesSection } from "@/components/exercises-section"
 import apiService from "@/services/apiService"
 
-export default async  function ExercisesPage() {
+export default async function ExercisesPage() {
   const data = await apiService.get("/api/exercises/")
 
   const grouped: Record<string, any[]> = {}
@@ -10,7 +10,7 @@ export default async  function ExercisesPage() {
     if (!grouped[ex.muscle_group]) grouped[ex.muscle_group] = []
     grouped[ex.muscle_group].push(ex)
   })
-  
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -21,7 +21,7 @@ export default async  function ExercisesPage() {
             Изучите правильную технику выполнения упражнений с помощью анимаций и подробных инструкций
           </p>
         </div>
-        <ExercisesSection initialData={grouped}/>
+        <ExercisesSection initialData={grouped} />
       </main>
     </div>
   )

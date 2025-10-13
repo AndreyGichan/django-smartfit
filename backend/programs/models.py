@@ -28,7 +28,7 @@ class ProgramWorkout(models.Model):
         ordering = ['order']
 
     def __str__(self):
-        return f"{self.program.name} — {self.name or f'День {self.order}'}"
+        return f"{self.name or f'День {self.order}'}"
 
 
 class ProgramWorkoutExercise(models.Model):
