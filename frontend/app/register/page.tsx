@@ -46,20 +46,37 @@ export default function RegisterPage() {
                 handleLogin(response.user.pk, response.access, response.refresh);
                 router.push('/');
             } else {
-                const allErrors: string[] = [];
+                const messages: string[] = [];
                 for (const key in response) {
+                    if (key === 'non_field_errors') continue;
                     if (Array.isArray(response[key])) {
-                        response[key].forEach((errMsg: string) => allErrors.push(`${key}: ${errMsg}`));
+                        response[key].forEach((msg: string) => {
+                            if (key === 'email' && msg.includes('already registered')) messages.push('Пользователь с таким email уже существует');
+                            else if (key === 'password1' && msg.includes('too short')) messages.push('Пароль слишком короткий, минимум 8 символов');
+                            else if (key === 'password1' && msg.includes('too common')) messages.push('Пароль слишком простой');
+                            else if (key === 'password1' && msg.includes('entirely numeric')) messages.push('Пароль не должен состоять только из цифр');
+                            else messages.push(`${key}: ${msg}`);
+                        });
                     } else {
-                        allErrors.push(`${key}: ${response[key]}`);
+                        messages.push(`${key}: ${response[key]}`);
                     }
                 }
-                setErrors(allErrors.length ? allErrors : ['Произошла ошибка регистрации']);
+                if (response.non_field_errors) {
+                    response.non_field_errors.forEach((msg: string) => {
+                        if (msg.includes('too similar to the email')) messages.push('Пароль слишком похож на email');
+                        else messages.push(msg);
+                    });
+                }
+                setErrors(messages.length ? messages : ['Произошла ошибка регистрации']);
             }
 
         } catch (err: any) {
             console.error('Register error:', err);
-            setErrors([JSON.stringify(err)]);
+            if (err.non_field_errors) {
+                setErrors(err.non_field_errors);
+            } else {
+                setErrors(['Ошибка регистрации. Попробуйте снова.']);
+            }
         } finally {
             setLoading(false);
         }

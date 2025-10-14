@@ -58,9 +58,15 @@ const apiService = {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error(`Ошибка запроса: ${res.status}`);
-    const json = await res.json();
+    let json;
+    try {
+      json = await res.json();
+    } catch {
+      json = {};
+    }
     console.log('Response:', json);
+
+    if (!res.ok) return json;
     return json;
   },
 
@@ -82,6 +88,34 @@ const apiService = {
 
     if (!res.ok) throw new Error(`Ошибка запроса: ${res.status}`);
     const json = await res.json();
+    console.log('Response:', json);
+    return json;
+  },
+
+  delete: async function (url: string): Promise<any> {
+    console.log('DELETE (SSR)', url);
+
+    const token = await getAccessToken();
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+      method: 'DELETE',
+      headers,
+    });
+
+    if (!res.ok) throw new Error(`Ошибка запроса: ${res.status}`);
+
+    let json;
+    try {
+      json = await res.json();
+    } catch {
+      json = {};
+    }
+
     console.log('Response:', json);
     return json;
   },

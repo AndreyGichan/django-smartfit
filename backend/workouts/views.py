@@ -68,3 +68,32 @@ def add_exercise_to_workout(request, pk):
         weight=data.get('weight')
     )
     return Response(WorkoutExerciseSerializer(workout_ex).data, status=201)
+
+
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def update_workout(request, pk):
+    try:
+        workout = Workout.objects.get(pk=pk, user=request.user)
+    except Workout.DoesNotExist:
+        return Response({'detail': 'Тренировка не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = WorkoutSerializer(workout, data=request.data, partial=True, context={'request': request})
+    
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_workout(request, pk):
+    try:
+        workout = Workout.objects.get(pk=pk, user=request.user)
+    except Workout.DoesNotExist:
+        return Response({'detail': 'Тренировка не найдена'}, status=status.HTTP_404_NOT_FOUND)
+    
+    workout.delete()
+    return Response({'detail': 'Тренировка удалена'}, status=status.HTTP_204_NO_CONTENT)

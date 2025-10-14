@@ -242,10 +242,12 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                                                     </p>
                                                 </div>
                                             </div>
-                                            <Button size="sm" className="hidden md:flex gap-2">
+                                            <Link href="/diary">
+                                            <Button size="sm" className="flex gap-2">
                                                 <Play className="h-4 w-4" />
                                                 Начать
                                             </Button>
+                                            </Link>
                                         </div>
                                     </div>
 

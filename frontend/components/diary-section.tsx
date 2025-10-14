@@ -84,6 +84,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
   })
   const [exerciseType, setExerciseType] = useState<"custom" | "existing">("custom")
   const [availableExercises, setAvailableExercises] = useState<{ id: string; name: string }[]>([])
+  const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
     async function fetchExercises() {
@@ -98,7 +99,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
     fetchExercises()
   }, [])
 
-  const handleAddWorkout = async (e: React.FormEvent) => {
+  const handleSaveWorkout = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       const payload: any = {
@@ -111,10 +112,19 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
         payload.program_workout = selectedProgramDay;
       }
 
-      const newWorkout = await apiService.post("/api/workouts/add/", payload);
+      // const newWorkout = await apiService.post("/api/workouts/add/", payload);
+
+      let savedWorkout;
+      if (isEditMode && selectedWorkoutId) {
+        // PUT запрос для редактирования
+        savedWorkout = await apiService.put(`/api/workouts/${selectedWorkoutId}/update/`, payload);
+      } else {
+        // POST запрос для добавления
+        savedWorkout = await apiService.post("/api/workouts/add/", payload);
+      }
 
       const workoutWithProgram = {
-        ...newWorkout,
+        ...savedWorkout,
         program: mode === "program" ? selectedProgram?.name : undefined,
         programDay: mode === "program" && selectedProgramDay
           ? selectedProgram?.program_workouts.find(d => d.id.toString() === selectedProgramDay)?.name
@@ -123,11 +133,23 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
       }
 
-      setEntries([workoutWithProgram, ...entries]);
+      if (isEditMode) {
+        // Обновляем существующую тренировку
+        setEntries((prev) =>
+          prev.map((entry) => (entry.id === selectedWorkoutId ? workoutWithProgram : entry))
+        );
+      } else {
+        // Добавляем новую
+        setEntries([workoutWithProgram, ...entries]);
+      }
+
+      // Сбрасываем состояние
       setFormData({ date: new Date().toISOString().split("T")[0], notes: "" });
-      setMode("")
-      setSelectedProgramDay(null)
+      setMode("");
+      setSelectedProgramDay(null);
+      setSelectedWorkoutId(null);
       setIsDialogOpen(false);
+      setIsEditMode(false);
     } catch (error) {
       console.error("Ошибка добавления тренировки:", error);
     }
@@ -179,7 +201,31 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
   }
 
-  const deleteEntry = (id: string) => setEntries(entries.filter((e) => e.id !== id))
+  const handleEditWorkout = (entry: WorkoutEntry) => {
+    setSelectedWorkoutId(entry.id);
+    setFormData({
+      date: entry.date,
+      notes: entry.notes || "",
+    });
+    setMode(entry.program ? "program" : "manual");
+    setSelectedProgramDay(entry.programWorkoutId || null);
+    setIsDialogOpen(true);
+    setIsEditMode(true);
+  };
+
+  const deleteEntry = async (id: string) => {
+    const confirmed = window.confirm("Вы уверены, что хотите удалить эту тренировку?");
+    if (!confirmed) return;
+    try {
+      await apiService.delete(`/api/workouts/${id}/delete/`);
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+    } catch (error) {
+      console.error("Ошибка при удалении тренировки:", error);
+      alert("Не удалось удалить тренировку");
+    }
+  }
+
+  // const deleteEntry = (id: string) => setEntries(entries.filter((e) => e.id !== id))
 
   return (
     <section id="diary" className="py-16 md:py-24">
@@ -213,25 +259,25 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
 
               {!mode ? (
-                <div className="space-y-3 mt-4">
+                <div className="mt-4 flex flex-col gap-3">
+                  <Button variant="outline" className="w-full" onClick={() => setMode("program")}>
+                      Выбрать день из программы
+                    </Button>
                   <Button className="w-full" onClick={() => setMode("manual")}>
-                    Создать вручную
+                    Свободная тренировка
                   </Button>
-                  {selectedProgram && (
+                  {/* {selectedProgram && (
                     <Button variant="outline" className="w-full" onClick={() => setMode("program")}>
                       Выбрать день из программы "{selectedProgram.name}"
                     </Button>
-                  )}
+                  )} */}
                 </div>
               ) : (
-                <form onSubmit={handleAddWorkout} className="space-y-4 mt-4">
+                <form onSubmit={handleSaveWorkout} className="space-y-4 mt-4">
                   {mode === "program" && (
                     <div className="space-y-2">
                       <Label>День программы</Label>
-                      <Select onValueChange={(value) => {
-                        console.log("Выбран день программы (value):", value);
-                        setSelectedProgramDay(value);
-                      }}>
+                      <Select onValueChange={(value) => setSelectedProgramDay(value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Выбери день" />
                         </SelectTrigger>
@@ -267,9 +313,14 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">
-                    Сохранить тренировку
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button type="button" variant="outline" onClick={() => setMode("")}>
+                      ← Назад
+                    </Button>
+                    <Button type="submit" className="w-full">
+                      {isEditMode ? "Сохранить изменения" : "Сохранить тренировку"}
+                    </Button>
+                  </div>
                 </form>
               )}
             </DialogContent>
@@ -293,6 +344,14 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditWorkout(entry)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+
                     <Button
                       variant="ghost"
                       size="icon"

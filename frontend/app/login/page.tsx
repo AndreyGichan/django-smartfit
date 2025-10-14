@@ -37,36 +37,37 @@ export default function LoginPage() {
                 await handleLogin(response.user.pk, response.access, response.refresh);
                 console.log("Login successful, cookies set");
                 router.push('/');
+                return;
+            }
+
+            if (response.non_field_errors) {
+                const translated = response.non_field_errors.map((msg: string) => {
+                    if (msg.includes("Unable to log in")) return "Неверный email или пароль";
+                    if (msg.includes("Must include")) return "Укажите email и пароль";
+                    return msg;
+                });
+                setErrors(translated);
+            } else if (response.email) {
+                setErrors(response.email);
+            } else if (response.password) {
+                setErrors(response.password);
             } else {
-                if (response.non_field_errors) {
-                    const translated = response.non_field_errors.map((msg: string) => {
-                        if (msg.includes("Unable to log in")) return "Неверный email или пароль";
-                        if (msg.includes("Must include")) return "Укажите email и пароль";
-                        return msg;
-                    });
-                    setErrors(translated);
-                } else {
-                    setErrors(["Ошибка входа"]);
-                }
-                console.log("Login failed", response);
+                setErrors(["Ошибка входа"]);
             }
         } catch (err: any) {
             console.error("Login error:", err);
-            try {
-                const parsed = JSON.parse(err.message);
-                if (parsed.non_field_errors) {
-                    const translated = parsed.non_field_errors.map((msg: string) => {
-                        if (msg.includes("Unable to log in")) return "Неверный email или пароль";
-                        if (msg.includes("Must include")) return "Укажите email и пароль";
-                        return msg;
-                    });
-                    setErrors(translated);
-                } else {
-                    setErrors(["Ошибка при входе. Попробуйте снова."]);
-                }
-            } catch {
-                setErrors(["Ошибка при входе. Попробуйте снова."]);
+
+            const messages: string[] = [];
+
+            if (err.non_field_errors) {
+                messages.push(...err.non_field_errors.map((msg: string) =>
+                    msg.includes("Unable to log in") ? "Неверный email или пароль" : msg
+                ));
             }
+            if (err.email) messages.push(...err.email);
+            if (err.password) messages.push(...err.password);
+
+            setErrors(messages.length > 0 ? messages : ["Ошибка при входе. Попробуйте снова."]);
         } finally {
             setLoading(false);
         }
