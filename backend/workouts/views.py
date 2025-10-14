@@ -97,3 +97,44 @@ def delete_workout(request, pk):
     
     workout.delete()
     return Response({'detail': 'Тренировка удалена'}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def update_workout_exercise(request, workout_pk, exercise_pk):
+    try:
+        workout_ex = WorkoutExercise.objects.get(pk=exercise_pk, workout__pk=workout_pk, workout__user=request.user)
+    except WorkoutExercise.DoesNotExist:
+        return Response({'detail': 'Упражнение не найдено'}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data
+
+    if 'exercise_id' in data:
+        try:
+            workout_ex.exercise = Exercise.objects.get(pk=data['exercise_id'])
+            workout_ex.name = workout_ex.exercise.name # type: ignore
+        except Exercise.DoesNotExist:
+            return Response({'detail': 'Упражнение не найдено'}, status=status.HTTP_404_NOT_FOUND)
+    elif 'name' in data:
+        workout_ex.name = data['name']
+
+    workout_ex.sets = data.get('sets', workout_ex.sets)
+    workout_ex.reps = data.get('reps', workout_ex.reps)
+    workout_ex.weight = data.get('weight', workout_ex.weight)
+    workout_ex.duration = data.get('duration', workout_ex.duration)
+
+    workout_ex.save()
+    serializer = WorkoutExerciseSerializer(workout_ex)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_workout_exercise(request, workout_pk, exercise_pk):
+    try:
+        workout_ex = WorkoutExercise.objects.get(pk=exercise_pk, workout__pk=workout_pk, workout__user=request.user)
+    except WorkoutExercise.DoesNotExist:
+        return Response({'detail': 'Упражнение не найдено'}, status=status.HTTP_404_NOT_FOUND)
+
+    workout_ex.delete()
+    return Response({'detail': 'Упражнение удалено'}, status=status.HTTP_204_NO_CONTENT)

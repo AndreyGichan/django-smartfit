@@ -23,7 +23,7 @@ class WorkoutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Workout
-        fields = ["id", "user", "program", "program_workout", "date", "notes", "exercises"]
+        fields = ["id", "user", "program", "program_workout", "date", "notes", "duration", "exercises"]
         read_only_fields = ['id', 'user']
 
     def create(self, validated_data):

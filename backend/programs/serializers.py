@@ -13,7 +13,7 @@ class ProgramWorkoutExerciseSerializer(serializers.ModelSerializer):
 
 
 class ProgramWorkoutSerializer(serializers.ModelSerializer):
-    exercises = ProgramWorkoutExerciseSerializer(many=True)
+    exercises = ProgramWorkoutExerciseSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProgramWorkout

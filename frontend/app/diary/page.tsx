@@ -22,6 +22,7 @@ export default async function DiaryPage() {
     workouts = workouts.map((w: any) => ({
       ...w,
       program: w.program === selectedProgram.id ? selectedProgram.name : w.program,
+      programId: w.program === selectedProgram.id ? selectedProgram.id : undefined,
       programDay: selectedProgram.program_workouts.find(
         (d: any) => d.id.toString() === w.program_workout?.toString()
       )?.name,

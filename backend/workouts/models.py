@@ -14,6 +14,7 @@ class Workout(models.Model):
     program_workout = models.ForeignKey(ProgramWorkout, related_name='workouts', on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField(default=timezone.now)
     notes = models.TextField(blank=True)
+    duration = models.DurationField(null=True, blank=True)
 
     def __str__(self):
         program_name = self.program.name if self.program else "Без программы"

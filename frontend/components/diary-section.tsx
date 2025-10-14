@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Plus, Edit2, Trash2 } from "lucide-react"
+import { Calendar, Plus, Edit2, Trash2, Search } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import apiService from "@/services/apiService"
+import Link from "next/link";
 
 
 type ExerciseEntry = {
@@ -32,7 +33,9 @@ type WorkoutEntry = {
   id: string
   date: string
   notes: string
+  duration?: string
   program?: string
+  programId?: string
   programDay?: string
   programWorkoutId?: string
   exercises: ExerciseEntry[]
@@ -74,6 +77,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     notes: "",
+    duration: "",
   })
   const [exerciseData, setExerciseData] = useState<ExerciseFormData>({
     id: "",
@@ -85,6 +89,10 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
   const [exerciseType, setExerciseType] = useState<"custom" | "existing">("custom")
   const [availableExercises, setAvailableExercises] = useState<{ id: string; name: string }[]>([])
   const [isEditMode, setIsEditMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
+  const [isEditExerciseMode, setIsEditExerciseMode] = useState(false);
+
 
   useEffect(() => {
     async function fetchExercises() {
@@ -105,6 +113,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
       const payload: any = {
         date: formData.date,
         notes: formData.notes,
+        duration: formData.duration || "",
       }
 
       if (mode === "program" && selectedProgramDay) {
@@ -112,39 +121,34 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
         payload.program_workout = selectedProgramDay;
       }
 
-      // const newWorkout = await apiService.post("/api/workouts/add/", payload);
 
       let savedWorkout;
       if (isEditMode && selectedWorkoutId) {
-        // PUT запрос для редактирования
         savedWorkout = await apiService.put(`/api/workouts/${selectedWorkoutId}/update/`, payload);
       } else {
-        // POST запрос для добавления
         savedWorkout = await apiService.post("/api/workouts/add/", payload);
       }
 
       const workoutWithProgram = {
         ...savedWorkout,
+        duration: savedWorkout.duration || formData.duration || "",
         program: mode === "program" ? selectedProgram?.name : undefined,
+        programId: mode === "program" ? selectedProgram?.id : undefined,
         programDay: mode === "program" && selectedProgramDay
           ? selectedProgram?.program_workouts.find(d => d.id.toString() === selectedProgramDay)?.name
           : undefined
 
-
       }
 
       if (isEditMode) {
-        // Обновляем существующую тренировку
         setEntries((prev) =>
           prev.map((entry) => (entry.id === selectedWorkoutId ? workoutWithProgram : entry))
         );
       } else {
-        // Добавляем новую
         setEntries([workoutWithProgram, ...entries]);
       }
 
-      // Сбрасываем состояние
-      setFormData({ date: new Date().toISOString().split("T")[0], notes: "" });
+      setFormData({ date: new Date().toISOString().split("T")[0], notes: "", duration: "" });
       setMode("");
       setSelectedProgramDay(null);
       setSelectedWorkoutId(null);
@@ -153,7 +157,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
     } catch (error) {
       console.error("Ошибка добавления тренировки:", error);
     }
-
   }
 
   const handleAddExercise = async (e: React.FormEvent) => {
@@ -201,11 +204,102 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
   }
 
+  const handleEditExercise = (exercise: ExerciseEntry, workoutId: string) => {
+    setSelectedWorkoutId(workoutId);
+    setSelectedExerciseId(exercise.id);
+    setExerciseData({
+      id: exercise.id,
+      name: exercise.name,
+      sets: exercise.sets.toString(),
+      reps: exercise.reps.toString(),
+      weight: exercise.weight?.toString() || ""
+    });
+    setExerciseType("custom"); // или "existing", если есть привязка
+    setIsExerciseDialogOpen(true);
+    setIsEditExerciseMode(true);
+  };
+
+  const handleSaveExercise = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedWorkoutId) return;
+
+    const data: any = exerciseType === "custom"
+      ? {
+        name: exerciseData.name,
+        sets: Number(exerciseData.sets),
+        reps: Number(exerciseData.reps),
+        weight: exerciseData.weight === "" ? undefined : Number(exerciseData.weight),
+      }
+      : {
+        exercise_id: exerciseData.id,
+        sets: Number(exerciseData.sets),
+        reps: Number(exerciseData.reps),
+        weight: exerciseData.weight === "" ? undefined : Number(exerciseData.weight),
+      };
+
+    try {
+      let savedExercise: ExerciseEntry;
+      if (isEditExerciseMode && selectedExerciseId) {
+        savedExercise = await apiService.put(
+          `/api/workouts/${selectedWorkoutId}/exercises/${selectedExerciseId}/update/`,
+          data
+        );
+        setEntries(prev =>
+          prev.map(entry =>
+            entry.id === selectedWorkoutId
+              ? {
+                ...entry,
+                exercises: entry.exercises.map(ex =>
+                  ex.id === selectedExerciseId ? savedExercise : ex
+                )
+              }
+              : entry
+          )
+        );
+      } else {
+        savedExercise = await apiService.post(`/api/workouts/${selectedWorkoutId}/exercises/`, data);
+        setEntries(prev =>
+          prev.map(entry =>
+            entry.id === selectedWorkoutId
+              ? { ...entry, exercises: [...entry.exercises, savedExercise] }
+              : entry
+          )
+        );
+      }
+
+      setExerciseData({ id: "", name: "", sets: "", reps: "", weight: "" });
+      setIsExerciseDialogOpen(false);
+      setIsEditExerciseMode(false);
+      setSelectedExerciseId(null);
+    } catch (error) {
+      console.error("Ошибка сохранения упражнения:", error);
+    }
+  };
+
+
+
+  const filteredEntries = entries.filter((entry) => {
+    const query = searchQuery.toLowerCase();
+    const combinedText = [
+      entry.program?.toLowerCase() || "",
+      entry.programDay?.toLowerCase() || "",
+      entry.notes?.toLowerCase() || "",
+      new Date(entry.date).toLocaleDateString("ru-RU").toLowerCase(),
+      ...entry.exercises.map(ex =>
+        `${ex.name} ${ex.sets}x${ex.reps} ${ex.weight ?? ""}`.toLowerCase()
+      )
+    ].join(" ");
+
+    return combinedText.includes(query);
+  });
+
+
   const handleEditWorkout = (entry: WorkoutEntry) => {
     setSelectedWorkoutId(entry.id);
     setFormData({
       date: entry.date,
       notes: entry.notes || "",
+      duration: entry.duration || "",
     });
     setMode(entry.program ? "program" : "manual");
     setSelectedProgramDay(entry.programWorkoutId || null);
@@ -225,7 +319,14 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
     }
   }
 
-  // const deleteEntry = (id: string) => setEntries(entries.filter((e) => e.id !== id))
+  const formatDuration = (durationStr?: string) => {
+    if (!durationStr) return "";
+    const parts = durationStr.split(":").map(Number);
+    let hours = parts[0];
+    let minutes = parts[1];
+    if (hours === 0) return `${minutes}:${parts[2]} ч`;
+    return `${hours}:${minutes.toString().padStart(2, "0")} ч`;
+  };
 
   return (
     <section id="diary" className="py-16 md:py-24">
@@ -261,8 +362,8 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
               {!mode ? (
                 <div className="mt-4 flex flex-col gap-3">
                   <Button variant="outline" className="w-full" onClick={() => setMode("program")}>
-                      Выбрать день из программы
-                    </Button>
+                    Выбрать день из программы
+                  </Button>
                   <Button className="w-full" onClick={() => setMode("manual")}>
                     Свободная тренировка
                   </Button>
@@ -313,6 +414,18 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                     />
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Длительность (мин)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      min="0"
+                      value={formData.duration}
+                      onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                      placeholder="Например, 60"
+                    />
+                  </div>
+
                   <div className="flex flex-col gap-2">
                     <Button type="button" variant="outline" onClick={() => setMode("")}>
                       ← Назад
@@ -327,21 +440,46 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
           </Dialog>
         </div>
 
+
+        <div className="mb-8 flex items-center gap-2">
+          <Search className="w-5 h-5 text-muted-foreground" />
+          <Input
+            placeholder="Поиск по тренировкам..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+
         {/* Список тренировок */}
         <div className="space-y-4">
-          {entries.map((entry) => (
+          {filteredEntries.map((entry) => (
             <Card key={entry.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <CardTitle className="text-xl mb-1">
                       Тренировка {new Date(entry.date).toLocaleDateString("ru-RU")}
+                      {entry.duration ? ` — ${formatDuration(entry.duration)}` : ""}
                     </CardTitle>
-                    <CardDescription>
+                    {/* <CardDescription>
                       {entry.program
                         ? `По программе "${entry.program}" (${entry.programDay})`
                         : "Свободная тренировка"}
+                    </CardDescription> */}
+                    <CardDescription>
+                      {entry.program ? (
+                        <Link
+                          href={`/programs/${entry.programId}`}
+                          className="text-primary hover:text-accent"
+                        >
+                          По программе "{entry.program}" ({entry.programDay})
+                        </Link>
+                      ) : (
+                        "Свободная тренировка"
+                      )}
                     </CardDescription>
+
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -375,6 +513,15 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                         <span>
                           {ex.sets}x{ex.reps}
                           {ex.weight !== undefined ? ` — ${ex.weight} кг` : ""}
+                          <Button size="icon" variant="ghost" onClick={() => handleEditExercise(ex, entry.id)}>
+                            <Edit2 className="h-3 w-3" />
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={async () => {
+                            await apiService.delete(`/api/workouts/${entry.id}/exercises/${ex.id}/delete/`);
+                            setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, exercises: e.exercises.filter(ex2 => ex2.id !== ex.id) } : e));
+                          }}>
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
                         </span>
                       </div>
                     ))}
@@ -411,11 +558,15 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
       <Dialog open={isExerciseDialogOpen} onOpenChange={setIsExerciseDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Добавить упражнение</DialogTitle>
+            <DialogTitle>
+              {isEditExerciseMode ? "Редактировать упражнение" : "Добавить упражнение"}
+            </DialogTitle>
             <DialogDescription>Введи данные упражнения</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleAddExercise} className="space-y-4 mt-4">
+          {/* <form onSubmit={handleAddExercise} className="space-y-4 mt-4"> */}
+          <form onSubmit={isEditExerciseMode ? handleSaveExercise : handleAddExercise} className="space-y-4 mt-4">
+
             <div className="space-y-2">
               <Label>Тип упражнения</Label>
               <Select onValueChange={(value) => setExerciseType(value as "custom" | "existing")}>

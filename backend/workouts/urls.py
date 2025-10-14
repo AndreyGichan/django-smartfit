@@ -8,4 +8,6 @@ urlpatterns = [
     path('<uuid:pk>/update/', views.update_workout, name='update_workout'),
     path('<uuid:pk>/delete/', views.delete_workout, name='delete_workout'),
     path('<uuid:pk>/exercises/', views.add_exercise_to_workout, name='add_exercise_to_workout'),
+    path('<uuid:workout_pk>/exercises/<uuid:exercise_pk>/update/', views.update_workout_exercise, name='update_workout_exercise'),
+    path('<uuid:workout_pk>/exercises/<uuid:exercise_pk>/delete/', views.delete_workout_exercise, name='delete_workout_exercise'),
 ]
