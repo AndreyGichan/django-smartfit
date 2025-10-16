@@ -61,7 +61,9 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
         </div>
 
         <Tabs defaultValue={Object.keys(exercises)[0] || "chest"} className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+          {/* <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8"> */}
+          <TabsList className="grid w-full mx-auto grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 mb-8">
+
             {Object.keys(exercises).map((group) => (
               <TabsTrigger key={group} value={group}>
                 {muscleLabels[group] || group}

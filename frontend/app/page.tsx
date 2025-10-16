@@ -3,11 +3,15 @@ import { Hero } from "@/components/hero"
 import { Button } from "@/components/ui/button"
 import { Dumbbell, BookOpen, Calendar, TrendingUp, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { getUserId } from "@/lib/actions"
 
-export default function HomePage() {
+export default async function HomePage() {
+  const userId = await getUserId()
+  const isLoggedIn = !!userId
+
   return (
     <div className="min-h-screen bg-black">
-      <Header />
+      <Header isLoggedIn={isLoggedIn}/>
       <main>
         <Hero />
 

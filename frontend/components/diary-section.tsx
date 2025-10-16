@@ -18,6 +18,17 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import apiService from "@/services/apiService"
 import Link from "next/link";
+import {
+  CustomAlertDialog,
+  CustomAlertDialogContent,
+  CustomAlertDialogHeader,
+  CustomAlertDialogFooter,
+  CustomAlertDialogTitle,
+  CustomAlertDialogDescription,
+  CustomAlertDialogAction,
+  CustomAlertDialogCancel,
+  CustomAlertDialogTrigger
+} from "@/components/ui/custom-alert-dialog"
 
 
 type ExerciseEntry = {
@@ -38,6 +49,7 @@ type WorkoutEntry = {
   programId?: string
   programDay?: string
   programWorkoutId?: string
+  program_workout?: string
   exercises: ExerciseEntry[]
 }
 
@@ -92,7 +104,10 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [isEditExerciseMode, setIsEditExerciseMode] = useState(false);
-
+  const [allPrograms, setAllPrograms] = useState<{ id: string; name: string; program_workouts: { id: string; name: string }[] }[]>([]);
+  const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
     async function fetchExercises() {
@@ -106,6 +121,14 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
     }
     fetchExercises()
   }, [])
+
+  useEffect(() => {
+    async function fetchPrograms() {
+      const data = await apiService.get("/api/programs/");
+      setAllPrograms(data);
+    }
+    fetchPrograms();
+  }, []);
 
   const handleSaveWorkout = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -134,18 +157,39 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
         duration: savedWorkout.duration || formData.duration || "",
         program: mode === "program" ? selectedProgram?.name : undefined,
         programId: mode === "program" ? selectedProgram?.id : undefined,
-        programDay: mode === "program" && selectedProgramDay
-          ? selectedProgram?.program_workouts.find(d => d.id.toString() === selectedProgramDay)?.name
-          : undefined
+        programWorkoutId: mode === "program" ? selectedProgramDay : undefined,
 
       }
 
       if (isEditMode) {
+        // setEntries((prev) =>
+        //   prev.map((entry) => (entry.id === selectedWorkoutId ? workoutWithProgram : entry))
+        // );
         setEntries((prev) =>
-          prev.map((entry) => (entry.id === selectedWorkoutId ? workoutWithProgram : entry))
+          prev.map((entry) =>
+            entry.id === selectedWorkoutId
+              ? {
+                ...entry,
+                ...savedWorkout,
+                program:
+                  typeof savedWorkout.program === "string"
+                    ? entry.program
+                    : savedWorkout.program || entry.program,
+                duration: savedWorkout.duration || formData.duration || entry.duration || "",
+                notes: formData.notes,
+                date: formData.date,
+              }
+              : entry
+          )
         );
       } else {
-        setEntries([workoutWithProgram, ...entries]);
+        // setEntries([workoutWithProgram, ...entries]);
+        setEntries((prev) =>
+          [workoutWithProgram, ...prev].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+        );
+
       }
 
       setFormData({ date: new Date().toISOString().split("T")[0], notes: "", duration: "" });
@@ -307,26 +351,51 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
     setIsEditMode(true);
   };
 
-  const deleteEntry = async (id: string) => {
-    const confirmed = window.confirm("Вы уверены, что хотите удалить эту тренировку?");
-    if (!confirmed) return;
-    try {
-      await apiService.delete(`/api/workouts/${id}/delete/`);
-      setEntries((prev) => prev.filter((e) => e.id !== id));
-    } catch (error) {
-      console.error("Ошибка при удалении тренировки:", error);
-      alert("Не удалось удалить тренировку");
-    }
+  const confirmDeleteEntry = (id: string) => {
+    setDeleteTargetId(id)
+    setIsDeleteDialogOpen(true)
   }
+
+  const handleDeleteConfirmed = async () => {
+    if (!deleteTargetId) return
+    try {
+      await apiService.delete(`/api/workouts/${deleteTargetId}/delete/`)
+      setEntries((prev) => prev.filter((e) => e.id !== deleteTargetId))
+    } catch (error) {
+      console.error("Ошибка при удалении тренировки:", error)
+      setDeleteTargetId(null)
+      setIsDeleteDialogOpen(false)
+      // Можно вызвать ещё один CustomAlertDialog для ошибки
+      alert("Не удалось удалить тренировку") // или сделать отдельный диалог для ошибок
+      return
+    }
+    setDeleteTargetId(null)
+    setIsDeleteDialogOpen(false)
+  }
+
+  // const deleteEntry = async (id: string) => {
+  //   const confirmed = window.confirm("Вы уверены, что хотите удалить эту тренировку?");
+  //   if (!confirmed) return;
+  //   try {
+  //     await apiService.delete(`/api/workouts/${id}/delete/`);
+  //     setEntries((prev) => prev.filter((e) => e.id !== id));
+  //   } catch (error) {
+  //     console.error("Ошибка при удалении тренировки:", error);
+  //     alert("Не удалось удалить тренировку");
+  //   }
+  // }
 
   const formatDuration = (durationStr?: string) => {
     if (!durationStr) return "";
     const parts = durationStr.split(":").map(Number);
-    let hours = parts[0];
-    let minutes = parts[1];
-    if (hours === 0) return `${minutes}:${parts[2]} ч`;
-    return `${hours}:${minutes.toString().padStart(2, "0")} ч`;
+    if (parts.length !== 3) return "";
+    const minutes = parts[1];
+    const seconds = parts[2];
+    const minutesStr = minutes.toString().padStart(2, "0");
+    const secondsStr = seconds.toString().padStart(2, "0");
+    return `${minutesStr}:${secondsStr} ч`;
   };
+
 
   return (
     <section id="diary" className="py-16 md:py-24">
@@ -453,104 +522,129 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
         {/* Список тренировок */}
         <div className="space-y-4">
-          {filteredEntries.map((entry) => (
-            <Card key={entry.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl mb-1">
-                      Тренировка {new Date(entry.date).toLocaleDateString("ru-RU")}
-                      {entry.duration ? ` — ${formatDuration(entry.duration)}` : ""}
-                    </CardTitle>
-                    {/* <CardDescription>
+          {filteredEntries
+            .slice()
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map((entry) => (
+              <Card key={entry.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <CardTitle className="text-xl mb-1">
+                        Тренировка {new Date(entry.date).toLocaleDateString("ru-RU")}
+                        {entry.duration && (
+                          <span className="text-lg text-muted-foreground">
+                            {' '} (длительность: {formatDuration(entry.duration)})
+                          </span>
+                        )}
+                      </CardTitle>
+                      {/* <CardDescription>
                       {entry.program
                         ? `По программе "${entry.program}" (${entry.programDay})`
                         : "Свободная тренировка"}
                     </CardDescription> */}
-                    <CardDescription>
-                      {entry.program ? (
-                        <Link
-                          href={`/programs/${entry.programId}`}
-                          className="text-primary hover:text-accent"
-                        >
-                          По программе "{entry.program}" ({entry.programDay})
-                        </Link>
-                      ) : (
-                        "Свободная тренировка"
-                      )}
-                    </CardDescription>
+                      <CardDescription>
+                        {/* {entry.program ? (
+                          <Link
+                            href={`/programs/${entry.programId}`}
+                            className="text-primary hover:text-accent"
+                          >
+                            По программе "{entry.program}" ({entry.programDay})
+                          </Link>
+                        ) : (
+                          "Свободная тренировка"
+                        )} */}
+                        {entry.programId ? (() => {
+                          const programObj = allPrograms.find(p => p.id === entry.programId);
+                          const dayName =
+                            programObj?.program_workouts.find(d => d.id === entry.program_workout)?.name ||
+                            entry.programDay;
 
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditWorkout(entry)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
+                          return programObj ? (
+                            <Link
+                              href={`/programs/${programObj.id}`}
+                              className="text-primary hover:text-accent"
+                            >
+                              По программе "{programObj.name}"{dayName ? ` (${dayName})` : ""}
+                            </Link>
+                          ) : (
+                            `По программе "${entry.program}" (${entry.programDay || ""})`
+                          )
+                        })() : "Свободная тренировка"}
+                      </CardDescription>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => deleteEntry(entry.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {entry.exercises.length > 0 ? (
-                  <div className="space-y-2 mb-3">
-                    {entry.exercises.map((ex) => (
-                      <div
-                        key={ex.id}
-                        className="flex items-center justify-between border-b pb-1 text-sm"
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditWorkout(entry)}
                       >
-                        <span>{ex.name}</span>
-                        <span>
-                          {ex.sets}x{ex.reps}
-                          {ex.weight !== undefined ? ` — ${ex.weight} кг` : ""}
-                          <Button size="icon" variant="ghost" onClick={() => handleEditExercise(ex, entry.id)}>
-                            <Edit2 className="h-3 w-3" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={async () => {
-                            await apiService.delete(`/api/workouts/${entry.id}/exercises/${ex.id}/delete/`);
-                            setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, exercises: e.exercises.filter(ex2 => ex2.id !== ex.id) } : e));
-                          }}>
-                            <Trash2 className="h-3 w-3 text-destructive" />
-                          </Button>
-                        </span>
-                      </div>
-                    ))}
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        // onClick={() => deleteEntry(entry.id)}
+                        onClick={() => confirmDeleteEntry(entry.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-muted-foreground text-sm mb-3 italic">
-                    Упражнения пока не добавлены
-                  </p>
-                )}
+                </CardHeader>
+                <CardContent>
+                  {entry.exercises.length > 0 ? (
+                    <div className="space-y-2 mb-3">
+                      {entry.exercises.map((ex) => (
+                        <div
+                          key={ex.id}
+                          className="flex items-center justify-between border-b pb-1 text-sm"
+                        >
+                          <span>{ex.name}</span>
+                          <span>
+                            {ex.sets}x{ex.reps}
+                            {ex.weight !== undefined ? ` — ${ex.weight} кг` : ""}
+                            <Button size="icon" variant="ghost" onClick={() => handleEditExercise(ex, entry.id)}>
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={async () => {
+                              await apiService.delete(`/api/workouts/${entry.id}/exercises/${ex.id}/delete/`);
+                              setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, exercises: e.exercises.filter(ex2 => ex2.id !== ex.id) } : e));
+                            }}>
+                              <Trash2 className="h-3 w-3 text-destructive" />
+                            </Button>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm mb-3 italic">
+                      Упражнения пока не добавлены
+                    </p>
+                  )}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedWorkoutId(entry.id)
-                    setIsExerciseDialogOpen(true)
-                  }}
-                >
-                  <Plus className="mr-1 h-4 w-4" /> Добавить упражнение
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedWorkoutId(entry.id)
+                      setIsExerciseDialogOpen(true)
+                    }}
+                  >
+                    <Plus className="mr-1 h-4 w-4" /> Добавить упражнение
+                  </Button>
 
-                {entry.notes && (
-                  <p className="text-sm text-muted-foreground italic border-l-2 border-primary pl-3 mt-3">
-                    {entry.notes}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  {entry.notes && (
+                    <p className="text-sm text-muted-foreground italic border-l-2 border-primary pl-3 mt-3">
+                      {entry.notes}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
         </div>
       </div>
 
@@ -581,20 +675,55 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
             </div>
 
             {exerciseType === "existing" ? (
+              // <div className="space-y-2">
+              //   <Label>Выбери упражнение</Label>
+              //   <Select onValueChange={(value) => setExerciseData({ ...exerciseData, id: value })}>
+              //     <SelectTrigger>
+              //       <SelectValue placeholder="Выбери упражнение" />
+              //     </SelectTrigger>
+              //     <SelectContent>
+              //       {availableExercises.map((ex) => (
+              //         <SelectItem key={ex.id} value={ex.id}>
+              //           {ex.name}
+              //         </SelectItem>
+              //       ))}
+              //     </SelectContent>
+              //   </Select>
+              // </div>
               <div className="space-y-2">
                 <Label>Выбери упражнение</Label>
-                <Select onValueChange={(value) => setExerciseData({ ...exerciseData, id: value })}>
+                <Select
+                  onValueChange={(value) => setExerciseData({ ...exerciseData, id: value })}
+                  value={exerciseData.id || undefined}
+                  onOpenChange={(open) => {
+                    if (!open) setExerciseSearchQuery("");
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Выбери упражнение" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {availableExercises.map((ex) => (
-                      <SelectItem key={ex.id} value={ex.id}>
-                        {ex.name}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="max-h-60">
+                    <div className="px-3 py-2 sticky top-0 bg-background z-10">
+                      <Input
+                        placeholder="Поиск..."
+                        value={exerciseSearchQuery}
+                        onChange={(e) => setExerciseSearchQuery(e.target.value)}
+                        autoFocus
+                        onKeyDown={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    {availableExercises
+                      .filter((ex) =>
+                        ex.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase())
+                      )
+                      .map((ex) => (
+                        <SelectItem key={ex.id} value={ex.id}>
+                          {ex.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
+
               </div>
             ) : (
               <div className="space-y-2">
@@ -647,6 +776,25 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
           </form>
         </DialogContent>
       </Dialog>
+
+      <CustomAlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <CustomAlertDialogContent variant="warning">
+          <CustomAlertDialogHeader>
+            <CustomAlertDialogTitle>Удаление тренировки</CustomAlertDialogTitle>
+            <CustomAlertDialogDescription>
+              Вы уверены, что хотите удалить эту тренировку? Действие нельзя будет отменить.
+            </CustomAlertDialogDescription>
+          </CustomAlertDialogHeader>
+          <CustomAlertDialogFooter>
+            <CustomAlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
+              Отмена
+            </CustomAlertDialogCancel>
+            <CustomAlertDialogAction onClick={handleDeleteConfirmed}>
+              Удалить
+            </CustomAlertDialogAction>
+          </CustomAlertDialogFooter>
+        </CustomAlertDialogContent>
+      </CustomAlertDialog>
     </section>
   )
 }

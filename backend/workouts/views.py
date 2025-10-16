@@ -7,6 +7,14 @@ from .models import Workout, WorkoutExercise
 from exercises.models import Exercise
 from .serializers import WorkoutSerializer, WorkoutExerciseSerializer
 
+from datetime import timedelta
+from django.utils import timezone
+from django.db.models import Count
+from calendar import day_abbr
+from django.db.models import Sum, F
+from django.db.models import Avg
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_workouts(request):
@@ -138,3 +146,245 @@ def delete_workout_exercise(request, workout_pk, exercise_pk):
 
     workout_ex.delete()
     return Response({'detail': 'Упражнение удалено'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def workout_activity_week(request):
+    today = timezone.now().date()
+    week_start = today - timedelta(days=6)  
+    
+    workouts = (
+        Workout.objects
+        .filter(user=request.user, date__range=[week_start, today])
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+
+    result = []
+    for i in range(7):
+        day_date = week_start + timedelta(days=i)
+        day_name = day_abbr[day_date.weekday()]
+        day_workouts = next((w['count'] for w in workouts if w['date'] == day_date), 0)
+        result.append({
+            'day': day_name,
+            'workouts': day_workouts
+        })
+
+    return Response(result, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def workout_activity_weeks(request):
+    n_weeks = int(request.GET.get('n_weeks', 6))
+    today = timezone.now().date()
+    weekly_counts = []
+
+    for i in reversed(range(n_weeks)):
+        week_start = today - timedelta(days=today.weekday()) - timedelta(weeks=i)
+        week_end = week_start + timedelta(days=6)
+        count = Workout.objects.filter(user=request.user, date__range=[week_start, week_end]).count()
+        weekly_counts.append({
+            "week": f"Нед {n_weeks-i}",
+            "workouts": count
+        })
+
+    return Response(weekly_counts)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def muscle_group_distribution(request):
+    exercises = WorkoutExercise.objects.filter(workout__user=request.user, exercise__isnull=False)
+    group_counts = exercises.values('exercise__muscle_group').annotate(count=Count('id'))
+
+    muscle_groups = {
+        "chest": 0,
+        "back": 0,
+        "legs": 0,
+        "arms": 0,
+        "shoulders": 0,
+        "core": 0,
+    }
+
+    for item in group_counts:
+        group = item['exercise__muscle_group']
+        muscle_groups[group] = item['count']
+
+    result = [
+        {"name": group_name.capitalize(), "value": count}
+        for group_name, count in muscle_groups.items()
+    ]
+
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def exercise_progress(request, exercise_id):
+    try:
+        exercise = Exercise.objects.get(id=exercise_id)
+    except Exercise.DoesNotExist:
+        return Response({'detail': 'Упражнение не найдено'}, status=404)
+
+    exercises = WorkoutExercise.objects.filter(
+        workout__user=request.user,
+        exercise=exercise
+    ).order_by('workout__date')
+
+    data = [
+        {
+            'date': ex.workout.date.strftime('%d %b'),
+            'weight': ex.weight or 0
+        }
+        for ex in exercises
+    ]
+
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def monthly_workouts(request):
+    today = timezone.now().date()
+    
+    current_month_start = today.replace(day=1)
+    current_count = Workout.objects.filter(
+        user=request.user,
+        date__gte=current_month_start,
+        date__lte=today
+    ).count()
+    
+    prev_month_end = current_month_start - timedelta(days=1)
+    prev_month_start = prev_month_end.replace(day=1)
+    prev_count = Workout.objects.filter(
+        user=request.user,
+        date__gte=prev_month_start,
+        date__lte=prev_month_end
+    ).count()
+    
+    diff = current_count - prev_count
+    
+    return Response({
+        "current": current_count,
+        "previous": prev_count,
+        "diff": diff
+    })
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def monthly_lifted_weight(request):
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
+
+    total_weight = WorkoutExercise.objects.filter(
+        workout__user=request.user,
+        workout__date__gte=month_start,
+    ).aggregate(
+        total_lifted=Sum(F('weight') * F('reps') * F('sets'))
+    )['total_lifted'] or 0
+
+    prev_month_end = month_start - timedelta(days=1)
+    prev_month_start = prev_month_end.replace(day=1)
+
+    prev_total_weight = WorkoutExercise.objects.filter(
+        workout__user=request.user,
+        workout__date__gte=prev_month_start,
+        workout__date__lte=prev_month_end
+    ).aggregate(
+        total_lifted=Sum(F('weight') * F('reps') * F('sets'))
+    )['total_lifted'] or 0
+
+    diff = total_weight - prev_total_weight
+
+    return Response({
+        "current": total_weight,
+        "previous": prev_total_weight,
+        "diff": diff
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def average_workout_duration(request):
+    today = timezone.now().date()
+
+    current_month_start = today.replace(day=1)
+    current_workouts = Workout.objects.filter(
+        user=request.user,
+        date__gte=current_month_start,
+        date__lte=today,
+        duration__isnull=False
+    )
+    current_avg = current_workouts.aggregate(avg_duration=Avg('duration'))['avg_duration']
+
+    prev_month_end = current_month_start - timedelta(days=1)
+    prev_month_start = prev_month_end.replace(day=1)
+    prev_workouts = Workout.objects.filter(
+        user=request.user,
+        date__gte=prev_month_start,
+        date__lte=prev_month_end,
+        duration__isnull=False
+    )
+    prev_avg = prev_workouts.aggregate(avg_duration=Avg('duration'))['avg_duration']
+
+    def td_to_seconds(td):
+        if not td:
+            return 0
+        return int(td.total_seconds())
+
+    return Response({
+        "current_month_avg_minutes": td_to_seconds(current_avg),
+        "current_month_count": current_workouts.count(),
+        "prev_month_avg_minutes": td_to_seconds(prev_avg),
+        "prev_month_count": prev_workouts.count(),
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def average_sets_per_workout(request):
+    today = timezone.now().date()
+
+    def get_avg_sets(start_date, end_date):
+        workouts = Workout.objects.filter(
+            user=request.user,
+            date__gte=start_date,
+            date__lte=end_date
+        )
+
+        if not workouts.exists():
+            return 0
+
+        total_sets_per_workout = workouts.annotate(
+            total_sets=Sum('exercises__sets')
+        ).values_list('total_sets', flat=True)
+
+        # Убираем None (если у тренировки нет упражнений)
+        total_sets_per_workout = [x for x in total_sets_per_workout if x is not None]
+
+        if not total_sets_per_workout:
+            return 0
+
+        return sum(total_sets_per_workout) / len(total_sets_per_workout)
+
+    # Текущий месяц
+    current_month_start = today.replace(day=1)
+    current_avg_sets = get_avg_sets(current_month_start, today)
+
+    # Прошлый месяц
+    prev_month_end = current_month_start - timedelta(days=1)
+    prev_month_start = prev_month_end.replace(day=1)
+    prev_avg_sets = get_avg_sets(prev_month_start, prev_month_end)
+
+    return Response({
+        "current": round(current_avg_sets, 1),
+        "previous": round(prev_avg_sets, 1),
+        "diff": round(current_avg_sets - prev_avg_sets, 1)
+    })

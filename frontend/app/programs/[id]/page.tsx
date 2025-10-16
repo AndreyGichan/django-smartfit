@@ -10,6 +10,18 @@ import { Target, Flame, Heart, Zap, Clock, TrendingUp, Calendar, ArrowLeft, Dumb
 import Link from "next/link"
 import apiService from "@/services/apiService"
 import ExerciseModal from "@/components/ExerciseModal"
+import { getUserId } from "@/lib/actions"
+import {
+    CustomAlertDialog,
+    CustomAlertDialogContent,
+    CustomAlertDialogHeader,
+    CustomAlertDialogFooter,
+    CustomAlertDialogTitle,
+    CustomAlertDialogDescription,
+    CustomAlertDialogAction,
+    CustomAlertDialogCancel,
+    CustomAlertDialogTrigger
+} from "@/components/ui/custom-alert-dialog"
 
 
 interface Exercise {
@@ -68,6 +80,19 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
     const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
     const [selecting, setSelecting] = useState(false)
     const [selected, setSelected] = useState(false)
+    const [currentProgramName, setCurrentProgramName] = useState<string | null>(null)
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
+    const [alertMessage, setAlertMessage] = useState<string | null>(null)
+    const [showAlert, setShowAlert] = useState(false)
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userId = await getUserId()
+            setIsLoggedIn(!!userId)
+        }
+        fetchUser()
+    }, [])
 
     useEffect(() => {
         if (!id) return
@@ -87,6 +112,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
 
                 setProgram({ ...data, schedule })
                 setSelected(data.is_selected || false)
+                setCurrentProgramName(data.current_program_name || null)
                 setError(null)
             })
             .catch(() => setError("Не удалось загрузить программу"))
@@ -95,16 +121,48 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
 
     const handleSelectProgram = async () => {
         if (!program) return
+
+        if (currentProgramName && currentProgramName !== program.name) {
+            // const confirmed = window.confirm(
+            //     `Вы уверены, что хотите выбрать "${program.name}"?\nТекущая программа "${currentProgramName}" будет отменена.`
+            // )
+            setShowConfirm(true)
+            return
+            // if (!confirmed) return
+        }
+
+        await confirmProgramSelection()
+
+        // setSelecting(true)
+        // try {
+        //     await apiService.post(`/api/programs/${program.id}/select/`, {})
+        //     setSelected(true)
+        //     alert(`Вы выбрали программу "${program.name}"`)
+        // } catch (error) {
+        //     console.error(error)
+        //     alert("Не удалось выбрать программу")
+        // } finally {
+        //     setSelecting(false)
+        // }
+    }
+    const showCustomAlert = (message: string) => {
+        setAlertMessage(message)
+        setShowAlert(true)
+    }
+
+    const confirmProgramSelection = async () => {
+        if (!program) return
         setSelecting(true)
         try {
             await apiService.post(`/api/programs/${program.id}/select/`, {})
             setSelected(true)
-            alert(`Вы выбрали программу "${program.name}"`)
+            showCustomAlert(`Вы выбрали программу "${program.name}"`)
         } catch (error) {
             console.error(error)
-            alert("Не удалось выбрать программу")
+            showCustomAlert("Не удалось выбрать программу")
         } finally {
             setSelecting(false)
+            setShowConfirm(false)
         }
     }
 
@@ -117,7 +175,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
     if (error || !program) {
         return (
             <div className="min-h-screen">
-                <Header />
+                <Header isLoggedIn={isLoggedIn} />
                 <main className="py-12 container mx-auto px-4">
                     <p className="text-red-500">{error || "Программа не найдена"}</p>
                     <Link href="/programs">
@@ -134,7 +192,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
 
     return (
         <div className="min-h-screen">
-            <Header />
+            <Header isLoggedIn={isLoggedIn} />
             <main className="py-8 md:py-12">
                 <div className="container mx-auto px-4 max-w-7xl">
                     <Link href="/programs">
@@ -243,10 +301,10 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                                                 </div>
                                             </div>
                                             <Link href="/diary">
-                                            <Button size="sm" className="flex gap-2">
-                                                <Play className="h-4 w-4" />
-                                                Начать
-                                            </Button>
+                                                <Button size="sm" className="flex gap-2">
+                                                    <Play className="h-4 w-4" />
+                                                    Начать
+                                                </Button>
                                             </Link>
                                         </div>
                                     </div>
@@ -354,6 +412,40 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                         exercise={selectedExercise}
                         onClose={() => setSelectedExercise(null)}
                     />
+
+                    <CustomAlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+                        <CustomAlertDialogContent variant="info">
+                            <CustomAlertDialogHeader>
+                                <CustomAlertDialogTitle>Подтверждение выбора</CustomAlertDialogTitle>
+                                <CustomAlertDialogDescription>
+                                    Вы уверены, что хотите выбрать программу "{program?.name}"? <br />
+                                    Текущая программа "{currentProgramName}" будет отменена.
+                                </CustomAlertDialogDescription>
+                            </CustomAlertDialogHeader>
+                            <CustomAlertDialogFooter>
+                                <CustomAlertDialogCancel>Отмена</CustomAlertDialogCancel>
+                                <CustomAlertDialogAction onClick={confirmProgramSelection}>
+                                    Подтвердить
+                                </CustomAlertDialogAction>
+                            </CustomAlertDialogFooter>
+                        </CustomAlertDialogContent>
+                    </CustomAlertDialog>
+
+                    <CustomAlertDialog open={showAlert} onOpenChange={setShowAlert}>
+                        <CustomAlertDialogContent variant="success">
+                            <CustomAlertDialogHeader>
+                                <CustomAlertDialogTitle>Сообщение</CustomAlertDialogTitle>
+                                <CustomAlertDialogDescription>
+                                    {alertMessage}
+                                </CustomAlertDialogDescription>
+                            </CustomAlertDialogHeader>
+                            <CustomAlertDialogFooter>
+                                <CustomAlertDialogAction onClick={() => setShowAlert(false)}>
+                                    Ок
+                                </CustomAlertDialogAction>
+                            </CustomAlertDialogFooter>
+                        </CustomAlertDialogContent>
+                    </CustomAlertDialog>
                 </div>
             </main>
         </div>

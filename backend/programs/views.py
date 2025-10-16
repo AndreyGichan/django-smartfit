@@ -24,7 +24,17 @@ def program_details(request, pk):
         return Response({'detail': 'Программа не найдена'}, status=status.HTTP_404_NOT_FOUND)
 
     serializer = ProgramSerializer(program, context={'request': request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+
+    current_program_name = None
+    if request.user.is_authenticated:
+        user = request.user
+        current_program_name = user.selected_program.name if user.selected_program else None
+
+
+    return Response({
+            **serializer.data, # type: ignore
+            "current_program_name": current_program_name,
+        }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

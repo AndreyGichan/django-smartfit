@@ -1,8 +1,11 @@
 import { Header } from "@/components/header"
 import { ExercisesSection } from "@/components/exercises-section"
 import apiService from "@/services/apiService"
+import { getUserId } from "@/lib/actions"
 
 export default async function ExercisesPage() {
+  const userId = await getUserId()
+  const isLoggedIn = !!userId
   const data = await apiService.get("/api/exercises/")
 
   const grouped: Record<string, any[]> = {}
@@ -13,7 +16,7 @@ export default async function ExercisesPage() {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header isLoggedIn={isLoggedIn} />
       <main className="py-12 md:py-16">
         <div className="container mx-auto px-4 mb-8">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Библиотека упражнений</h1>

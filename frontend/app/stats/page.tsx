@@ -1,10 +1,14 @@
 import { Header } from "@/components/header"
 import { StatsSection } from "@/components/stats-section"
+import { getUserId } from "@/lib/actions"
 
-export default function StatsPage() {
+export default async function StatsPage() {
+  const userId = await getUserId()
+  const isLoggedIn = !!userId
+
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header isLoggedIn={isLoggedIn}/>
       <main className="py-12 md:py-16">
         <div className="container mx-auto px-4 mb-8">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Статистика и прогресс</h1>

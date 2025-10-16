@@ -9,30 +9,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { User, Mail, Calendar, Ruler, Weight, Users, Target, Dumbbell, Save, ArrowRight } from "lucide-react"
 import apiService from "@/services/apiService"
 import Link from "next/link"
+import { getUserId } from "@/lib/actions"
 
 export default function ProfilePage() {
-  //   const [profile, setProfile] = useState({
-  //     name: "Иван Петров",
-  //     email: "ivan@example.com",
-  //     age: "28",
-  //     height: "180",
-  //     weight: "75",
-  //     gender: "male",
-  //     level: "intermediate",
-  //     goal: "muscle",
-  //     trainingType: "strength",
-  //   })
-
   const [profile, setProfile] = useState<any>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
-    apiService.get("/api/auth/profile/")
-      .then(data => {
+    async function fetchProfile() {
+      try {
+        const userId = await getUserId()
+        setIsLoggedIn(!!userId)
+
+        const data = await apiService.get("/api/auth/profile/")
         setProfile(data)
-      })
-      .catch(err => console.error("Ошибка при загрузке профиля:", err))
+      } catch (err) {
+        console.error("Ошибка при загрузке профиля:", err)
+      }
+    }
+    fetchProfile()
   }, [])
 
   const handleSave = async () => {
@@ -59,7 +56,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header isLoggedIn={isLoggedIn} />
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
