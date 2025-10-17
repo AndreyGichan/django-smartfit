@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Plus, Edit2, Trash2, Search } from "lucide-react"
+import { CalendarIcon, Plus, Edit2, Trash2, Search } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,9 @@ import {
   CustomAlertDialogCancel,
   CustomAlertDialogTrigger
 } from "@/components/ui/custom-alert-dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
 
 
 type ExerciseEntry = {
@@ -108,6 +111,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
   const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
   useEffect(() => {
     async function fetchExercises() {
@@ -133,8 +137,10 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
   const handleSaveWorkout = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      const pad = (n: number) => n.toString().padStart(2, "0");
       const payload: any = {
-        date: formData.date,
+        date: `${selectedDate.getFullYear()}-${pad(selectedDate.getMonth() + 1)}-${pad(selectedDate.getDate())}`,
+        // date: selectedDate.toISOString().split("T")[0],
         notes: formData.notes,
         duration: formData.duration || "",
       }
@@ -162,9 +168,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
       }
 
       if (isEditMode) {
-        // setEntries((prev) =>
-        //   prev.map((entry) => (entry.id === selectedWorkoutId ? workoutWithProgram : entry))
-        // );
         setEntries((prev) =>
           prev.map((entry) =>
             entry.id === selectedWorkoutId
@@ -177,13 +180,12 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                     : savedWorkout.program || entry.program,
                 duration: savedWorkout.duration || formData.duration || entry.duration || "",
                 notes: formData.notes,
-                date: formData.date,
+                date: payload.date,
               }
               : entry
           )
         );
       } else {
-        // setEntries([workoutWithProgram, ...entries]);
         setEntries((prev) =>
           [workoutWithProgram, ...prev].sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -192,7 +194,11 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
       }
 
-      setFormData({ date: new Date().toISOString().split("T")[0], notes: "", duration: "" });
+      setFormData(prev => ({
+        ...prev,
+        date: payload.date
+      }));
+      setSelectedDate(new Date(payload.date));
       setMode("");
       setSelectedProgramDay(null);
       setSelectedWorkoutId(null);
@@ -258,7 +264,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
       reps: exercise.reps.toString(),
       weight: exercise.weight?.toString() || ""
     });
-    setExerciseType("custom"); // или "existing", если есть привязка
+    setExerciseType("custom");
     setIsExerciseDialogOpen(true);
     setIsEditExerciseMode(true);
   };
@@ -365,25 +371,13 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
       console.error("Ошибка при удалении тренировки:", error)
       setDeleteTargetId(null)
       setIsDeleteDialogOpen(false)
-      // Можно вызвать ещё один CustomAlertDialog для ошибки
-      alert("Не удалось удалить тренировку") // или сделать отдельный диалог для ошибок
+      alert("Не удалось удалить тренировку")
       return
     }
     setDeleteTargetId(null)
     setIsDeleteDialogOpen(false)
   }
 
-  // const deleteEntry = async (id: string) => {
-  //   const confirmed = window.confirm("Вы уверены, что хотите удалить эту тренировку?");
-  //   if (!confirmed) return;
-  //   try {
-  //     await apiService.delete(`/api/workouts/${id}/delete/`);
-  //     setEntries((prev) => prev.filter((e) => e.id !== id));
-  //   } catch (error) {
-  //     console.error("Ошибка при удалении тренировки:", error);
-  //     alert("Не удалось удалить тренировку");
-  //   }
-  // }
 
   const formatDuration = (durationStr?: string) => {
     if (!durationStr) return "";
@@ -398,20 +392,21 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
 
   return (
-    <section id="diary" className="py-16 md:py-24">
+    <section id="diary">
       <div className="container mx-auto px-4">
-        {/* Заголовок и кнопка */}
+
         <div className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 
+               bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600 
+               bg-clip-text text-transparent">
               Дневник тренировок
             </h2>
             <p className="text-lg text-muted-foreground">
-              Записывай свои тренировки и добавляй упражнения постепенно
+              Записывайте свои тренировки и отслеживайте прогресс
             </p>
           </div>
 
-          {/* Диалог добавления тренировки */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button size="lg">
@@ -464,12 +459,47 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
                   <div className="space-y-2">
                     <Label htmlFor="date">Дата</Label>
-                    <Input
+                    {/* <Input
                       id="date"
                       type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    />
+                    /> */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !selectedDate && "text-muted-foreground",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {selectedDate ? (
+                            selectedDate.toLocaleDateString("ru-RU", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })
+                          ) : (
+                            <span>Выберите дату</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date) => {
+                            if (date) {
+                              setSelectedDate(date)
+                              setFormData(prev => ({ ...prev, date: date.toISOString().split("T")[0] }))
+                            }
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+
                   </div>
 
                   <div className="space-y-2">
@@ -648,7 +678,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
         </div>
       </div>
 
-      {/* Диалог добавления упражнения */}
       <Dialog open={isExerciseDialogOpen} onOpenChange={setIsExerciseDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -658,7 +687,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
             <DialogDescription>Введи данные упражнения</DialogDescription>
           </DialogHeader>
 
-          {/* <form onSubmit={handleAddExercise} className="space-y-4 mt-4"> */}
           <form onSubmit={isEditExerciseMode ? handleSaveExercise : handleAddExercise} className="space-y-4 mt-4">
 
             <div className="space-y-2">
@@ -675,21 +703,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
             </div>
 
             {exerciseType === "existing" ? (
-              // <div className="space-y-2">
-              //   <Label>Выбери упражнение</Label>
-              //   <Select onValueChange={(value) => setExerciseData({ ...exerciseData, id: value })}>
-              //     <SelectTrigger>
-              //       <SelectValue placeholder="Выбери упражнение" />
-              //     </SelectTrigger>
-              //     <SelectContent>
-              //       {availableExercises.map((ex) => (
-              //         <SelectItem key={ex.id} value={ex.id}>
-              //           {ex.name}
-              //         </SelectItem>
-              //       ))}
-              //     </SelectContent>
-              //   </Select>
-              // </div>
               <div className="space-y-2">
                 <Label>Выбери упражнение</Label>
                 <Select

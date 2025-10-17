@@ -36,16 +36,22 @@ class ProgramWorkoutSerializer(serializers.ModelSerializer):
 class ProgramSerializer(serializers.ModelSerializer):
     program_workouts = ProgramWorkoutSerializer(many=True, read_only=True)
     is_selected = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'program_workouts', 'is_selected']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'image', 'program_workouts', 'is_selected']
 
     def get_is_selected(self, obj):
         user = self.context['request'].user
         if user.is_authenticated:
             return user.selected_program_id == obj.id
         return False
+    
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url.replace(self.context['request'].build_absolute_uri('/'), '/')
+        return None
 
 
 class ProgramCreateSerializer(serializers.ModelSerializer):
@@ -53,7 +59,7 @@ class ProgramCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'program_workouts']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'image', 'program_workouts']
 
     def create(self, validated_data):
         workouts_data = validated_data.pop('program_workouts', [])

@@ -50,3 +50,12 @@ def select_program(request, program_id):
     user.save()
 
     return Response({'detail': f'Вы выбрали программу "{program.name}"'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def recommended_programs(request):
+    user = request.user
+    programs = Program.objects.filter(level=user.level, goal=user.goal)
+    serializer = ProgramSerializer(programs, many=True, context={'request': request})
+    return Response(serializer.data)

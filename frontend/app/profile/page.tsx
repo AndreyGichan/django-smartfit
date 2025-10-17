@@ -1,21 +1,38 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
-import { User, Mail, Calendar, Ruler, Weight, Users, Target, Dumbbell, Save, ArrowRight } from "lucide-react"
+import { User, Mail, Calendar, Ruler, Weight, Users, Target, Dumbbell, Save, ArrowRight, Edit2, LogOut, Clock } from "lucide-react"
 import apiService from "@/services/apiService"
 import Link from "next/link"
-import { getUserId } from "@/lib/actions"
+import { getUserId, resetAuthCookies } from "@/lib/actions"
+import {
+  CustomAlertDialog,
+  CustomAlertDialogContent,
+  CustomAlertDialogHeader,
+  CustomAlertDialogTitle,
+  CustomAlertDialogDescription,
+  CustomAlertDialogFooter,
+  CustomAlertDialogAction,
+  CustomAlertDialogCancel,
+} from "@/components/ui/custom-alert-dialog"
+
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [totalWorkouts, setTotalWorkouts] = useState<number>(0);
+  const [totalHours, setTotalHours] = useState<number>(0);
+  const [constants, setConstants] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchProfile() {
@@ -46,10 +63,58 @@ export default function ProfilePage() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await resetAuthCookies()
+      setIsLoggedIn(false)
+      setProfile(null)
+      console.log("Выход выполнен")
+      router.push('/login');
+    } catch (err) {
+      console.error("Ошибка при выходе:", err)
+    }
+  }
+
+  useEffect(() => {
+    async function fetchConstants() {
+      try {
+        const data = await apiService.get("/api/auth/constants/");
+        setConstants(data);
+      } catch (err) {
+        console.error("Ошибка при загрузке констант:", err);
+      }
+    }
+    fetchConstants();
+  }, []);
+
+  useEffect(() => {
+    async function fetchTotalWorkouts() {
+      try {
+        const data = await apiService.get("/api/workouts/total/");
+        setTotalWorkouts(data.total_workouts);
+      } catch (err) {
+        console.error("Ошибка при получении общего числа тренировок:", err);
+      }
+    }
+    fetchTotalWorkouts();
+  }, []);
+
+  useEffect(() => {
+    async function fetchTotalHours() {
+      try {
+        const data = await apiService.get("/api/workouts/total-hours/");
+        setTotalHours(data.total_hours);
+      } catch (err) {
+        console.error("Ошибка при получении общего времени тренировок:", err);
+      }
+    }
+    fetchTotalHours();
+  }, []);
+
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Загрузка профиля...</p>
+        <p>Загрузка ...</p>
       </div>
     )
   }
@@ -84,21 +149,34 @@ export default function ProfilePage() {
                   <h2 className="text-2xl font-bold mb-1">{profile.name}</h2>
                   <p className="text-muted-foreground">{profile.email}</p>
                 </div>
-                <Button
-                  onClick={() => setIsEditing(!isEditing)}
-                  variant={isEditing ? "outline" : "default"}
-                  className="group/btn relative overflow-hidden"
-                >
-                  <span className="relative z-10">{isEditing ? "Отменить" : "Редактировать"}</span>
-                  {!isEditing && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover/btn:opacity-100 transition-opacity" />
-                  )}
-                </Button>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsEditing(!isEditing)}
+                    variant={isEditing ? "outline" : "default"}
+                    className="group/btn relative overflow-hidden"
+                  >
+                    <Edit2 className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">{isEditing ? "Отменить" : "Редактировать"}</span>
+                    {!isEditing && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                    )}
+                  </Button>
+
+                  <Button
+                    onClick={() => setShowLogoutConfirm(true)}
+                    variant="destructive"
+                    className="group/logout relative overflow-hidden flex items-center gap-1"
+                  >
+                    <LogOut className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Выйти</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 opacity-0 group-hover/logout:opacity-30 transition-opacity rounded-lg" />
+                  </Button>
+                </div>
               </div>
 
               {/* Profile Form */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Имя */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="name" className="flex items-center gap-2 text-sm font-medium">
                     <User className="h-4 w-4 text-primary" />
@@ -113,7 +191,6 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Email */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
                     <Mail className="h-4 w-4 text-primary" />
@@ -129,7 +206,6 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Возраст */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="age" className="flex items-center gap-2 text-sm font-medium">
                     <Calendar className="h-4 w-4 text-primary" />
@@ -145,7 +221,6 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Рост */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="height" className="flex items-center gap-2 text-sm font-medium">
                     <Ruler className="h-4 w-4 text-primary" />
@@ -161,7 +236,6 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Вес */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="weight" className="flex items-center gap-2 text-sm font-medium">
                     <Weight className="h-4 w-4 text-primary" />
@@ -177,7 +251,6 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Пол */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="gender" className="flex items-center gap-2 text-sm font-medium">
                     <Users className="h-4 w-4 text-primary" />
@@ -192,14 +265,16 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="male">Мужской</SelectItem>
+                      {/* <SelectItem value="male">Мужской</SelectItem>
                       <SelectItem value="female">Женский</SelectItem>
-                      <SelectItem value="other">Другой</SelectItem>
+                      <SelectItem value="other">Другой</SelectItem> */}
+                      {constants?.gender.map((item: any) => (
+                        <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Уровень */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="level" className="flex items-center gap-2 text-sm font-medium">
                     <Target className="h-4 w-4 text-primary" />
@@ -214,14 +289,15 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">Начинающий</SelectItem>
-                      <SelectItem value="intermediate">Средний</SelectItem>
-                      <SelectItem value="advanced">Продвинутый</SelectItem>
+                      {constants?.level.map((item: any) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Цель */}
                 <div className="space-y-2 group/field">
                   <Label htmlFor="goal" className="flex items-center gap-2 text-sm font-medium">
                     <Target className="h-4 w-4 text-primary" />
@@ -236,15 +312,15 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="weight-loss">Похудение</SelectItem>
-                      <SelectItem value="muscle">Набор массы</SelectItem>
-                      <SelectItem value="endurance">Выносливость</SelectItem>
-                      <SelectItem value="maintenance">Поддержание формы</SelectItem>
+                      {constants?.goal.map((item: any) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Выбранная программа */}
                 <div className="space-y-2 group/field md:col-span-2">
                   <Label htmlFor="selectedProgram" className="flex items-center gap-2 text-sm font-medium">
                     <Dumbbell className="h-4 w-4 text-primary" />
@@ -263,33 +339,8 @@ export default function ProfilePage() {
                     </p>
                   )}
                 </div>
-
-                {/* Тип тренировки */}
-                {/* <div className="space-y-2 group/field md:col-span-2">
-                  <Label htmlFor="trainingType" className="flex items-center gap-2 text-sm font-medium">
-                    <Dumbbell className="h-4 w-4 text-primary" />
-                    Тип тренировки
-                  </Label>
-                  <Select
-                    value={profile.trainingType}
-                    onValueChange={(value) => setProfile({ ...profile, trainingType: value })}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger className="bg-background/50 border-border/50 focus:border-primary transition-all duration-300 disabled:opacity-60">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="strength">Силовые тренировки</SelectItem>
-                      <SelectItem value="cardio">Кардио</SelectItem>
-                      <SelectItem value="mixed">Смешанные</SelectItem>
-                      <SelectItem value="functional">Функциональные</SelectItem>
-                      <SelectItem value="yoga">Йога/Пилатес</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div> */}
               </div>
 
-              {/* Save Button */}
               {isEditing && (
                 <div className="mt-8 pt-6 border-t border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <Button
@@ -307,7 +358,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <div className="relative group animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-xl opacity-20 group-hover:opacity-30 blur transition duration-500" />
@@ -334,8 +384,8 @@ export default function ProfilePage() {
                     <Dumbbell className="h-6 w-6 text-accent" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Тренировок</p>
-                    <p className="text-2xl font-bold">24</p>
+                    <p className="text-sm text-muted-foreground">Всего тренировок</p>
+                    <p className="text-2xl font-bold">{totalWorkouts}</p>
                   </div>
                 </div>
               </div>
@@ -346,11 +396,11 @@ export default function ProfilePage() {
               <div className="relative bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl p-6">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-primary" />
+                    <Clock className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Дней подряд</p>
-                    <p className="text-2xl font-bold">7</p>
+                    <p className="text-sm text-muted-foreground">Всего часов тренировок</p>
+                    <p className="text-2xl font-bold">{totalHours}</p>
                   </div>
                 </div>
               </div>
@@ -358,6 +408,25 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      <CustomAlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <CustomAlertDialogContent variant="warning">
+          <CustomAlertDialogHeader>
+            <CustomAlertDialogTitle>Вы уверены?</CustomAlertDialogTitle>
+            <CustomAlertDialogDescription>
+              Вы действительно хотите выйти из профиля?
+            </CustomAlertDialogDescription>
+          </CustomAlertDialogHeader>
+          <CustomAlertDialogFooter>
+            <CustomAlertDialogCancel onClick={() => setShowLogoutConfirm(false)}>
+              Отмена
+            </CustomAlertDialogCancel>
+            <CustomAlertDialogAction onClick={handleLogout}>
+              Выйти
+            </CustomAlertDialogAction>
+          </CustomAlertDialogFooter>
+        </CustomAlertDialogContent>
+      </CustomAlertDialog>
     </div>
   )
 }

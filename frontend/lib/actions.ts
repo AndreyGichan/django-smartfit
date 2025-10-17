@@ -21,20 +21,20 @@ export async function handleRefresh(): Promise<string | undefined> {
     const cookieStore = await cookies();
 
     if (json.access) {
-      cookieStore.set('session_access_token', json.access, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60, // 60 минут
-        path: '/'
-      });
+      // cookieStore.set('session_access_token', json.access, {
+      //   httpOnly: true,
+      //   secure: process.env.NODE_ENV === 'production',
+      //   maxAge: 60 * 60, // 60 минут
+      //   path: '/'
+      // });
       return json.access;
     } else {
-      await resetAuthCookies();
+      // await resetAuthCookies();
       return undefined;
     }
   } catch (error) {
     console.error('handleRefresh error:', error);
-    await resetAuthCookies();
+    // await resetAuthCookies();
     return undefined;
   }
 }
@@ -83,7 +83,7 @@ export async function getAccessToken(): Promise<string | undefined> {
   let accessToken = cookieStore.get('session_access_token')?.value;
 
   if (!accessToken) {
-    accessToken = await handleRefresh(); 
+    accessToken = await handleRefresh();
   }
 
   return accessToken;

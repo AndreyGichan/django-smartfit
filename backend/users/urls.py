@@ -12,4 +12,5 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='rest_logout'),
     path('profile/', views.user_profile_view, name='user_profile'),
     path('token/refresh/', get_refresh_view().as_view(), name='token_refresh'),
+    path('constants/', views.constants_view, name='constants'),
 ]

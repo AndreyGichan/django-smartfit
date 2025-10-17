@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Play, Info } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import ExerciseModal from "./ExerciseModal"
+import { Input } from "@/components/ui/input"
+import { Search } from "lucide-react"
 
 const muscleLabels: Record<string, string> = {
   chest: "Грудь",
@@ -39,6 +41,7 @@ interface Exercise {
 export function ExercisesSection({ initialData }: { initialData: Record<string, Exercise[]> }) {
   const [exercises] = useState(initialData)
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   if (!Object.keys(exercises).length) {
     return (
@@ -48,21 +51,36 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
     )
   }
 
+   const filteredExercises = Object.fromEntries(
+    Object.entries(exercises).map(([group, list]) => [
+      group,
+      list.filter((ex) =>
+        ex.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    ])
+  )
+
   return (
-    <section id="exercises" className="py-16 md:py-24 bg-muted/30">
+    <section id="exercises" className="py-6 md:py-6 bg-muted/30">
       <div className="container mx-auto px-4">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 text-balance">
-            Библиотека упражнений
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
-            Изучай правильную технику выполнения упражнений
-          </p>
+        <div className="mb-8 text-center">
+          <div className="mt-6 flex justify-center items-center gap-2 w-full mx-auto">
+            <Search className="w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Поиск упражнений..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1"
+            />
+          </div>
         </div>
 
         <Tabs defaultValue={Object.keys(exercises)[0] || "chest"} className="w-full">
           {/* <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8"> */}
-          <TabsList className="grid w-full mx-auto grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 mb-8">
+          {/* <TabsList className="grid w-full mx-auto grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 mb-8"> */}
+          <TabsList
+            className="flex flex-wrap justify-center gap-2 mb-8 w-full md:grid md:grid-cols-[repeat(auto-fit,minmax(120px,1fr))]"
+          >
 
             {Object.keys(exercises).map((group) => (
               <TabsTrigger key={group} value={group}>
@@ -71,7 +89,7 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
             ))}
           </TabsList>
 
-          {Object.entries(exercises).map(([group, list]) => (
+          {Object.entries(filteredExercises).map(([group, list]) => (
             <TabsContent key={group} value={group}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {list.map((exercise) => (

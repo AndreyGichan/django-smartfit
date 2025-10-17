@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import { StatsSection } from "@/components/stats-section"
 import { getUserId } from "@/lib/actions"
+import { StatsAccessDialog } from "@/components/stats-access-dialog"
 
 export default async function StatsPage() {
   const userId = await getUserId()
@@ -9,15 +10,21 @@ export default async function StatsPage() {
   return (
     <div className="min-h-screen">
       <Header isLoggedIn={isLoggedIn}/>
+      {isLoggedIn ? (
       <main className="py-12 md:py-16">
         <div className="container mx-auto px-4 mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Статистика и прогресс</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 
+               bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600 
+               bg-clip-text text-transparent">Статистика и прогресс</h1>
           <p className="text-muted-foreground text-lg max-w-3xl">
             Анализируйте свои результаты и отслеживайте достижения
           </p>
         </div>
         <StatsSection />
       </main>
+      ) : (
+        <StatsAccessDialog />
+      )}
     </div>
   )
 }

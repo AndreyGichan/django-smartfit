@@ -65,7 +65,7 @@ const CustomAlertDialogContent = React.forwardRef<
       <AlertDialogPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%]",
+          "fixed left-[50%] top-[50%] z-50 w-[90%] max-w-lg translate-x-[-50%] translate-y-[-50%]",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -81,17 +81,17 @@ const CustomAlertDialogContent = React.forwardRef<
           <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", gradients[variant])} />
 
           {/* Decorative blurs */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/30 rounded-full blur-3xl" />
-          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-accent/30 rounded-full blur-3xl" />
+          <div className="absolute -top-24 -right-24 w-36 h-36 sm:w-48 sm:h-48 bg-primary/30 rounded-full blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 w-36 h-36 sm:w-48 sm:h-48 bg-accent/30 rounded-full blur-3xl" />
 
           {/* Content */}
-          <div className="relative p-8">
+          <div className="relative p-4 sm:p-8">
             {/* Icon */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-4 sm:mb-6">
               <div className="relative">
                 <div className={cn("absolute inset-0 rounded-full blur-xl opacity-50", iconColors[variant])} />
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm border border-primary/20">
-                  <Icon className={cn("h-8 w-8", iconColors[variant])} />
+                <div className="relative flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm border border-primary/20">
+                  <Icon className={cn("h-6 w-6 sm:h-8 sm:w-8", iconColors[variant])} />
                 </div>
               </div>
             </div>
@@ -142,7 +142,7 @@ const CustomAlertDialogAction = React.forwardRef<
   <AlertDialogPrimitive.Action
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold",
+      "w-full sm:w-auto inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold",
       "bg-gradient-to-r from-primary to-accent text-white",
       "hover:shadow-lg hover:shadow-primary/50 hover:scale-105",
       "transition-all duration-200",
@@ -162,7 +162,7 @@ const CustomAlertDialogCancel = React.forwardRef<
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold",
+      "w-full sm:w-auto inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold",
       "bg-background/50 backdrop-blur-sm border border-border",
       "hover:bg-muted hover:border-primary/30",
       "transition-all duration-200",

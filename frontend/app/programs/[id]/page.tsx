@@ -85,6 +85,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
     const [showConfirm, setShowConfirm] = useState(false)
     const [alertMessage, setAlertMessage] = useState<string | null>(null)
     const [showAlert, setShowAlert] = useState(false)
+    const [showLoginAlert, setShowLoginAlert] = useState(false)
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -122,28 +123,18 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
     const handleSelectProgram = async () => {
         if (!program) return
 
+        if (!isLoggedIn) {
+        setShowLoginAlert(true)  // показываем диалог с кнопкой "Войти"
+        return
+    }
+
         if (currentProgramName && currentProgramName !== program.name) {
-            // const confirmed = window.confirm(
-            //     `Вы уверены, что хотите выбрать "${program.name}"?\nТекущая программа "${currentProgramName}" будет отменена.`
-            // )
             setShowConfirm(true)
             return
-            // if (!confirmed) return
         }
 
         await confirmProgramSelection()
 
-        // setSelecting(true)
-        // try {
-        //     await apiService.post(`/api/programs/${program.id}/select/`, {})
-        //     setSelected(true)
-        //     alert(`Вы выбрали программу "${program.name}"`)
-        // } catch (error) {
-        //     console.error(error)
-        //     alert("Не удалось выбрать программу")
-        // } finally {
-        //     setSelecting(false)
-        // }
     }
     const showCustomAlert = (message: string) => {
         setAlertMessage(message)
@@ -446,6 +437,28 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                             </CustomAlertDialogFooter>
                         </CustomAlertDialogContent>
                     </CustomAlertDialog>
+
+                    <CustomAlertDialog open={showLoginAlert} onOpenChange={setShowLoginAlert}>
+                        <CustomAlertDialogContent variant="info">
+                            <CustomAlertDialogHeader>
+                                <CustomAlertDialogTitle>Требуется вход</CustomAlertDialogTitle>
+                                <CustomAlertDialogDescription>
+                                    Чтобы выбрать программу, необходимо войти в аккаунт
+                                </CustomAlertDialogDescription>
+                            </CustomAlertDialogHeader>
+                            <CustomAlertDialogFooter>
+                                <CustomAlertDialogCancel onClick={() => setShowLoginAlert(false)}>
+                                    Отмена
+                                </CustomAlertDialogCancel>
+                                <Link href="/login">
+                                    <CustomAlertDialogAction>
+                                        Войти
+                                    </CustomAlertDialogAction>
+                                </Link>
+                            </CustomAlertDialogFooter>
+                        </CustomAlertDialogContent>
+                    </CustomAlertDialog>
+
                 </div>
             </main>
         </div>

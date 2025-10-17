@@ -148,6 +148,24 @@ def delete_workout_exercise(request, workout_pk, exercise_pk):
     return Response({'detail': 'Упражнение удалено'}, status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def total_workouts(request):
+    count = Workout.objects.filter(user=request.user).count()
+    return Response({"total_workouts": count})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def total_workout_hours(request):
+    total_duration = Workout.objects.filter(user=request.user).aggregate(
+        total=Sum('duration')
+    )['total'] or timedelta(0)
+
+    total_hours = total_duration.total_seconds() / 60
+
+    return Response({"total_hours": round(total_hours, 1)})
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -366,7 +384,6 @@ def average_sets_per_workout(request):
             total_sets=Sum('exercises__sets')
         ).values_list('total_sets', flat=True)
 
-        # Убираем None (если у тренировки нет упражнений)
         total_sets_per_workout = [x for x in total_sets_per_workout if x is not None]
 
         if not total_sets_per_workout:
@@ -374,11 +391,9 @@ def average_sets_per_workout(request):
 
         return sum(total_sets_per_workout) / len(total_sets_per_workout)
 
-    # Текущий месяц
     current_month_start = today.replace(day=1)
     current_avg_sets = get_avg_sets(current_month_start, today)
 
-    # Прошлый месяц
     prev_month_end = current_month_start - timedelta(days=1)
     prev_month_start = prev_month_end.replace(day=1)
     prev_avg_sets = get_avg_sets(prev_month_start, prev_month_end)

@@ -5,6 +5,7 @@ const apiService = {
     console.log('GET (SSR)', url);
 
     const token = await getAccessToken();
+    
 
     const headers: Record<string, string> = {
       'Accept': 'application/json',
