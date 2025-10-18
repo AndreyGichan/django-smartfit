@@ -32,8 +32,8 @@ interface Exercise {
   description: string
   muscle_group: string
   equipment_needed?: string
-  image?: string | null
-  video?: string | null
+  image_url?: string | null
+  video_url?: string | null
   technique?: string[] | null
   difficulty?: string
 }
@@ -96,11 +96,12 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
                   <Card key={exercise.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
                     <div className="relative h-48 overflow-hidden bg-muted">
                       <img
-                        src={
-                          exercise.image
-                            ? `${process.env.NEXT_PUBLIC_API_HOST}${exercise.image}`
-                            : "/placeholder.svg"
-                        }
+                        // src={
+                        //   exercise.image_url
+                        //     ? `${process.env.NEXT_PUBLIC_API_HOST}${exercise.image_url}`
+                        //     : "/placeholder.svg"
+                        // }
+                        src={exercise.image_url || "/placeholder.svg"}
                         alt={exercise.name}
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       />

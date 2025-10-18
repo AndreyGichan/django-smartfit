@@ -7,8 +7,8 @@ interface Exercise {
   id?: string
   name: string
   description?: string
-  image?: string | null
-  video?: string | null
+  image_url?: string | null
+  video_url?: string | null
   technique?: string[] | null
   difficulty?: string
   equipment_needed?: string
@@ -28,7 +28,7 @@ const difficultyLabels: Record<string, string> = {
 export default function ExerciseModal({ exercise, onClose }: ExerciseModalProps) {
   if (!exercise) return null
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_HOST || ""
+  // const baseUrl = process.env.NEXT_PUBLIC_API_HOST || ""
 
   return (
     <Dialog open={!!exercise} onOpenChange={onClose}>
@@ -39,24 +39,24 @@ export default function ExerciseModal({ exercise, onClose }: ExerciseModalProps)
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Видео или изображение */}
           <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted">
-            {exercise.video ? (
+            {exercise.video_url ? (
               <video
-                src={`${baseUrl}${exercise.video}`}
+                // src={`${baseUrl}${exercise.video}`}
+                src={exercise.video_url || "/placeholder.svg"}
                 controls
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
               <img
-                src={exercise.image ? `${baseUrl}${exercise.image}` : "/placeholder.svg"}
+                // src={exercise.image ? `${baseUrl}${exercise.image}` : "/placeholder.svg"}
+                src={exercise.image_url || "/placeholder.svg"}
                 alt={exercise.name}
                 className="w-full h-full object-cover rounded-lg"
               />
             )}
           </div>
 
-          {/* Сложность и оборудование */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Сложность</p>
@@ -70,7 +70,6 @@ export default function ExerciseModal({ exercise, onClose }: ExerciseModalProps)
             </div>
           </div>
 
-          {/* Техника */}
           <div>
             <h3 className="font-semibold mb-3">Правильная техника выполнения:</h3>
             {exercise.technique && exercise.technique.length > 0 ? (

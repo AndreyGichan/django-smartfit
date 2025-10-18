@@ -16,13 +16,12 @@ export default async function HomePage() {
         <Hero />
         
         <section className="py-20 md:py-32 relative overflow-hidden bg-black">
-          <div className="absolute top-40 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+          <div className="absolute top-50 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/10 rounded-full blur-3xl" />
+          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-accent/10 rounded-full blur-3xl" />
 
           <div className="container relative mx-auto px-4">
             
-          
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
                 Как это работает

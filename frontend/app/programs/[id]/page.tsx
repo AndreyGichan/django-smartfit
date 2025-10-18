@@ -28,7 +28,7 @@ interface Exercise {
     name: string
     sets: string
     rest: string
-    image?: string
+    image_url?: string
 }
 
 interface DaySchedule {
@@ -107,7 +107,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                         name: ex.exercise.name,
                         sets: `${ex.sets}x${ex.reps}`,
                         rest: "-",
-                        image: ex.exercise.image || "/placeholder.svg",
+                        image_url: ex.exercise.image_url || "/placeholder.svg",
                     })) || [],
                 })) || []
 
@@ -311,7 +311,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                                                     <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-muted/30 to-transparent">
                                                         <div className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-muted border border-border/50 shadow-md">
                                                             <img
-                                                                src={exercise.image || "/placeholder.svg?height=96&width=96"}
+                                                                src={exercise.image_url || "/placeholder.svg"}
                                                                 alt={exercise.name}
                                                                 className="w-full h-full object-cover group-hover/exercise:scale-110 transition-transform duration-500"
                                                             />

@@ -36,11 +36,11 @@ class ProgramWorkoutSerializer(serializers.ModelSerializer):
 class ProgramSerializer(serializers.ModelSerializer):
     program_workouts = ProgramWorkoutSerializer(many=True, read_only=True)
     is_selected = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'image', 'program_workouts', 'is_selected']
+        fields = ['id', 'name', 'description', 'level', 'goal', 'training_type', 'frequency', 'image_url', 'program_workouts', 'is_selected']
 
     def get_is_selected(self, obj):
         user = self.context['request'].user
@@ -48,9 +48,9 @@ class ProgramSerializer(serializers.ModelSerializer):
             return user.selected_program_id == obj.id
         return False
     
-    def get_image(self, obj):
-        if obj.image:
-            return obj.image.url.replace(self.context['request'].build_absolute_uri('/'), '/')
+    def get_image_url(self, obj):
+        if obj.image_url:
+            return obj.image_url
         return None
 
 
@@ -76,6 +76,5 @@ class ProgramCreateSerializer(serializers.ModelSerializer):
                     reps=ex_data.get('reps'),
                     weight=ex_data.get('weight')
                 )
-
 
         return program
