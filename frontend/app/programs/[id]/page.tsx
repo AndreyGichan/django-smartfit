@@ -124,7 +124,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
         if (!program) return
 
         if (!isLoggedIn) {
-        setShowLoginAlert(true)  // показываем диалог с кнопкой "Войти"
+        setShowLoginAlert(true)  
         return
     }
 
@@ -196,15 +196,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                     <div className="relative rounded-3xl overflow-hidden mb-8 border border-primary/20 shadow-2xl shadow-primary/10">
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20" />
                         <div className="relative backdrop-blur-sm bg-black/40 p-8 md:p-12">
-                            {/* <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/50 animate-float">
-                                    <Icon className="h-10 w-10 text-white" />
-                                </div>
-                                <div className="flex-1">
-                                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 text-balance">{program.name}</h1>
-                                    <p className="text-white/80 text-lg md:text-xl text-pretty">{program.description}</p>
-                                </div>
-                            </div> */}
+                            
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                                 <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/50 animate-float">
                                     <Icon className="h-10 w-10 text-white" />

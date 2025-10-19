@@ -140,7 +140,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
       const pad = (n: number) => n.toString().padStart(2, "0");
       const payload: any = {
         date: `${selectedDate.getFullYear()}-${pad(selectedDate.getMonth() + 1)}-${pad(selectedDate.getDate())}`,
-        // date: selectedDate.toISOString().split("T")[0],
         notes: formData.notes,
         duration: formData.duration || "",
       }
@@ -431,11 +430,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                   <Button className="w-full" onClick={() => setMode("manual")}>
                     Свободная тренировка
                   </Button>
-                  {/* {selectedProgram && (
-                    <Button variant="outline" className="w-full" onClick={() => setMode("program")}>
-                      Выбрать день из программы "{selectedProgram.name}"
-                    </Button>
-                  )} */}
                 </div>
               ) : (
                 <form onSubmit={handleSaveWorkout} className="space-y-4 mt-4">
@@ -459,12 +453,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
 
                   <div className="space-y-2">
                     <Label htmlFor="date">Дата</Label>
-                    {/* <Input
-                      id="date"
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    /> */}
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -550,7 +538,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
         </div>
 
 
-        {/* Список тренировок */}
         <div className="space-y-4">
           {filteredEntries
             .slice()
@@ -568,22 +555,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                           </span>
                         )}
                       </CardTitle>
-                      {/* <CardDescription>
-                      {entry.program
-                        ? `По программе "${entry.program}" (${entry.programDay})`
-                        : "Свободная тренировка"}
-                    </CardDescription> */}
                       <CardDescription>
-                        {/* {entry.program ? (
-                          <Link
-                            href={`/programs/${entry.programId}`}
-                            className="text-primary hover:text-accent"
-                          >
-                            По программе "{entry.program}" ({entry.programDay})
-                          </Link>
-                        ) : (
-                          "Свободная тренировка"
-                        )} */}
                         {entry.programId ? (() => {
                           const programObj = allPrograms.find(p => p.id === entry.programId);
                           const dayName =
@@ -617,7 +589,6 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive hover:text-destructive"
-                        // onClick={() => deleteEntry(entry.id)}
                         onClick={() => confirmDeleteEntry(entry.id)}
                       >
                         <Trash2 className="h-4 w-4" />

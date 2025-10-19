@@ -125,7 +125,7 @@ export default function ProfilePage() {
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          {/* Header Section */}
+
           <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Профиль
@@ -133,11 +133,11 @@ export default function ProfilePage() {
             <p className="text-muted-foreground text-lg">Управляйте своей информацией и настройками</p>
           </div>
 
-          {/* Profile Card */}
+
           <div className="relative group animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-2xl opacity-20 group-hover:opacity-30 blur transition duration-500" />
             <div className="relative bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-2xl">
-              {/* Avatar Section */}
+
               <div className="flex flex-col md:flex-row items-center gap-6 mb-8 pb-8 border-b border-border/50">
                 <div className="relative group/avatar">
                   <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-full opacity-75 group-hover/avatar:opacity-100 blur transition duration-300" />
@@ -175,7 +175,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Profile Form */}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2 group/field">
                   <Label htmlFor="name" className="flex items-center gap-2 text-sm font-medium">
@@ -265,9 +265,6 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* <SelectItem value="male">Мужской</SelectItem>
-                      <SelectItem value="female">Женский</SelectItem>
-                      <SelectItem value="other">Другой</SelectItem> */}
                       {constants?.gender.map((item: any) => (
                         <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
                       ))}

@@ -76,11 +76,7 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
         </div>
 
         <Tabs defaultValue={Object.keys(exercises)[0] || "chest"} className="w-full">
-          {/* <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8"> */}
-          {/* <TabsList className="grid w-full mx-auto grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 mb-8"> */}
-          <TabsList
-            className="flex flex-wrap justify-center gap-2 mb-8 w-full md:grid md:grid-cols-[repeat(auto-fit,minmax(120px,1fr))]"
-          >
+          <TabsList className="flex flex-wrap justify-center gap-2 w-full max-w-2xl mx-auto mb-8 h-auto p-2">
 
             {Object.keys(exercises).map((group) => (
               <TabsTrigger key={group} value={group}>
@@ -96,11 +92,6 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
                   <Card key={exercise.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
                     <div className="relative h-48 overflow-hidden bg-muted">
                       <img
-                        // src={
-                        //   exercise.image_url
-                        //     ? `${process.env.NEXT_PUBLIC_API_HOST}${exercise.image_url}`
-                        //     : "/placeholder.svg"
-                        // }
                         src={exercise.image_url || "/placeholder.svg"}
                         alt={exercise.name}
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
@@ -137,70 +128,6 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
           ))}
         </Tabs>
         <ExerciseModal exercise={selectedExercise} onClose={() => setSelectedExercise(null)} />
-        {/* <Dialog open={!!selectedExercise} onOpenChange={() => setSelectedExercise(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">{selectedExercise?.name}</DialogTitle>
-              <DialogDescription>{selectedExercise?.description}</DialogDescription>
-            </DialogHeader>
-
-            {selectedExercise && (
-              <div className="space-y-6">
-                <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted">
-                  {selectedExercise.video ? (
-                    <video
-                      src={`${process.env.NEXT_PUBLIC_API_HOST}${selectedExercise.video}`}
-                      controls
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  ) : (
-                    <img
-                      src={selectedExercise.image ? `${process.env.NEXT_PUBLIC_API_HOST}${selectedExercise.image}` : "/placeholder.svg"}
-                      alt={selectedExercise.name}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Сложность</p>
-                    <Badge variant="secondary">
-                      {selectedExercise.difficulty ? difficultyLabels[selectedExercise.difficulty] || selectedExercise.difficulty : ""}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Оборудование</p>
-                    <p className="text-sm font-medium">
-                      {selectedExercise.equipment_needed || "Без оборудования"}
-                    </p>
-                  </div>
-                </div>
-
-
-
-                <div>
-                  <h3 className="font-semibold mb-3">Правильная техника выполнения:</h3>
-                  {selectedExercise.technique && selectedExercise.technique.length > 0 ? (
-                    <ol className="space-y-2">
-                      {selectedExercise.technique.map((step: string, index: number) => (
-                        <li key={index} className="flex gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                            {index + 1}
-                          </span>
-                          <span className="text-sm leading-relaxed pt-0.5">{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Техника пока не добавлена</p>
-                  )}
-
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog> */}
       </div>
     </section>
   )

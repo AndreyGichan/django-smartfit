@@ -9,9 +9,6 @@ import { Wand } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function ProgramsPage() {
-  // const userId = await getUserId()
-  // const isLoggedIn = !!userId
-  // const programs = await apiService.get("/api/programs/")
 
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(false)
@@ -30,7 +27,6 @@ export default function ProgramsPage() {
     setLoading(false)
   }
 
-  // Загрузка рекомендованных программ
   const fetchRecommendedPrograms = async () => {
     setLoading(true)
     try {
@@ -61,40 +57,6 @@ export default function ProgramsPage() {
 
       <Header isLoggedIn={isLoggedIn} />
 
-      {/* <main className="py-12 md:py-16">
-        <div className="container mx-auto px-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-2">Программы тренировок</h1>
-            <p className="text-muted-foreground text-lg max-w-3xl">
-              Выберите программу под свою цель и уровень подготовки
-            </p>
-          </div>
-          {isLoggedIn && (
-            <div className="flex gap-4">
-              <Button
-                size="lg"
-                onClick={fetchRecommendedPrograms}
-                className={`relative transition-all duration-200 ${isRecommendedApplied
-                    ? "bg-primary/80 shadow-inner scale-95 cursor-default"
-                    : "hover:scale-105 hover:shadow-md active:scale-95"
-                  }`}
-              >
-                <Wand className="mr-2 h-5 w-5" />
-                {isRecommendedApplied ? "Подбор применен" : "Подбор на основе профиля"}
-              </Button>
-              <Button size="lg" variant="outline" onClick={loadAllPrograms}>
-                Сбросить
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {loading ? (
-          <p className="text-center text-muted-foreground py-16">Загрузка...</p>
-        ) : (
-          <ProgramsSection programs={programs} />
-        )}
-      </main> */}
       <main className="relative py-12 md:py-16">
         <div className="container mx-auto px-4 mb-12">
           <div className="max-w-4xl mx-auto text-center space-y-6">

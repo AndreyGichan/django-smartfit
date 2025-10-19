@@ -23,8 +23,6 @@ class Exercise(models.Model):
     description = models.TextField(blank=True)
     muscle_group = models.CharField(max_length=20, choices=MUSCLE_GROUP_CHOICES)
     equipment_needed = models.CharField(max_length=100, blank=True, null=True)
-    # image = models.ImageField(upload_to="temp/exercises/", blank=True, null=True)
-    # video = models.FileField(upload_to="temp/exercises/videos/", blank=True, null=True)
     image_url = models.URLField(blank=True, null=True)
     video_url = models.URLField(blank=True, null=True)
     technique = models.JSONField(blank=True, null=True)

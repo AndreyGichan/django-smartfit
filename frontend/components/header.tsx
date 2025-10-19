@@ -14,7 +14,6 @@ interface HeaderProps {
 export function Header({ isLoggedIn }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  // const [isLoggedIn, setIsLoggedIn] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -24,12 +23,6 @@ export function Header({ isLoggedIn }: HeaderProps) {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
-
-  // useEffect(() => {
-  //   apiService.get("/api/auth/profile/")
-  //     .then(() => setIsLoggedIn(true))
-  //     .catch(() => setIsLoggedIn(false))
-  // }, [])
 
   const navItems = [
     { href: "/programs", label: "Программы" },
@@ -56,7 +49,6 @@ export function Header({ isLoggedIn }: HeaderProps) {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
@@ -106,7 +98,6 @@ export function Header({ isLoggedIn }: HeaderProps) {
             </div>
           </nav>
 
-          {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="icon"

@@ -86,11 +86,6 @@ export function ProgramsSection({ programs }: ProgramsSectionProps) {
                   <div className="flex flex-col flex-1">
                     <div className="relative h-48 md:h-56 overflow-hidden bg-muted">
                       <img
-                        // src={
-                        //   program.image
-                        //     ? `${process.env.NEXT_PUBLIC_API_HOST}${program.image}`
-                        //     : "/placeholder.svg"
-                        // }
                         src={program.image_url || "/placeholder.svg"}
                         alt={program.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

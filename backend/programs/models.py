@@ -12,7 +12,6 @@ class Program(models.Model):
     goal = models.CharField(max_length=20, choices=GOAL_CHOICES, default='maintenance')
     training_type = models.CharField(max_length=10, choices=TRAINING_TYPE_CHOICES, default='home')
     frequency = models.CharField(max_length=20, blank=True, help_text="Например: '3 раза в неделю' или '2x2'")
-    # image = models.ImageField(upload_to="temp/programs/", blank=True, null=True)
     image_url = models.URLField(blank=True, null=True)
 
     def __str__(self):

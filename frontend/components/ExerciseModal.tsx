@@ -28,8 +28,6 @@ const difficultyLabels: Record<string, string> = {
 export default function ExerciseModal({ exercise, onClose }: ExerciseModalProps) {
   if (!exercise) return null
 
-  // const baseUrl = process.env.NEXT_PUBLIC_API_HOST || ""
-
   return (
     <Dialog open={!!exercise} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -42,14 +40,12 @@ export default function ExerciseModal({ exercise, onClose }: ExerciseModalProps)
           <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted">
             {exercise.video_url ? (
               <video
-                // src={`${baseUrl}${exercise.video}`}
                 src={exercise.video_url || "/placeholder.svg"}
                 controls
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
               <img
-                // src={exercise.image ? `${baseUrl}${exercise.image}` : "/placeholder.svg"}
                 src={exercise.image_url || "/placeholder.svg"}
                 alt={exercise.name}
                 className="w-full h-full object-cover rounded-lg"
