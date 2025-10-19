@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect, useTransition } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LoadingOverlay } from "./LoadingOverLay"
+import { LoadingOverlay } from "./LoadingOverlay"
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -35,13 +35,18 @@ export function Header({ isLoggedIn }: HeaderProps) {
     { href: "/stats", label: "Статистика" },
   ]
 
+  useEffect(() => {
+    setLoading(false)
+  }, [pathname])
+
   const handleLinkClick = (href: string) => {
     setLoading(true)
     startTransition(() => {
       router.push(href)
-      setLoading(false)
     })
   }
+
+  const isLoading = loading || isPending
 
   return (
     <>
@@ -53,7 +58,14 @@ export function Header({ isLoggedIn }: HeaderProps) {
       >
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link
+              href="/"
+              onClick={(e) => {
+                e.preventDefault()
+                handleLinkClick("/")
+              }}
+              className="flex items-center gap-2 group"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <Dumbbell className="h-6 w-6 text-primary-foreground" />
               </div>
@@ -86,6 +98,10 @@ export function Header({ isLoggedIn }: HeaderProps) {
                 {isLoggedIn ? (
                   <Link
                     href="/profile"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleLinkClick("/profile")
+                    }}
                     className={`relative text-sm font-medium transition-colors group flex items-center gap-2 ${pathname === "/profile" ? "text-primary" : "text-foreground/80 hover:text-foreground"
                       }`}
                   >
@@ -98,13 +114,25 @@ export function Header({ isLoggedIn }: HeaderProps) {
                   </Link>
                 ) : (
                   <>
-                    <Link href="/login">
+                    <Link
+                      href="/login"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleLinkClick("/login")
+                      }}
+                    >
                       <Button variant="ghost" className="hover:bg-primary/10 hover:text-primary">
                         Вход
                       </Button>
                     </Link>
 
-                    <Link href="/programs">
+                    <Link
+                      href="/programs"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleLinkClick("/programs")
+                      }}
+                    >
                       <Button size="sm" className=" group relative overflow-hidden">
                         <span className="relative z-10">Начать</span>
                         <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -148,19 +176,42 @@ export function Header({ isLoggedIn }: HeaderProps) {
               <div className="flex flex-col gap-2 mt-4">
                 {isLoggedIn ? (
                   <Link href="/profile">
-                    <Button className="w-full" variant="outline">
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setMobileMenuOpen(false)
+                        handleLinkClick("/profile")
+                      }}
+                    >
                       Профиль
                     </Button>
                   </Link>
                 ) : (
                   <>
-                    <Link href="/login">
+                    <Link
+                      href="/login"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setMobileMenuOpen(false)
+                        handleLinkClick("/login")
+                      }}
+                    >
                       <Button className="w-full" variant="outline">
                         Вход
                       </Button>
                     </Link>
                     <Link href="/programs">
-                      <Button className="w-full">Начать</Button>
+                      <Button
+                        className="w-full"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setMobileMenuOpen(false)
+                          handleLinkClick("/programs")
+                        }}
+                      >
+                        Начать</Button>
                     </Link>
                   </>
                 )}
@@ -170,7 +221,7 @@ export function Header({ isLoggedIn }: HeaderProps) {
         </div>
       </header>
 
-      <LoadingOverlay show={isPending} />
+      <LoadingOverlay show={isLoading} />
     </>
   )
 }
