@@ -16,7 +16,7 @@ export function Header({ isLoggedIn }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [loading, setLoading] = useState(false)
-  
+
   const pathname = usePathname()
   const router = useRouter()
 
@@ -133,9 +133,13 @@ export function Header({ isLoggedIn }: HeaderProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setMobileMenuOpen(false)
+                    handleLinkClick(item.href)
+                  }}
                   className={`block py-2 text-sm font-medium transition-all hover:translate-x-2 ${pathname === item.href ? "text-primary" : "text-foreground/80"
                     }`}
-                  onClick={() => setMobileMenuOpen(false)}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {item.label}
