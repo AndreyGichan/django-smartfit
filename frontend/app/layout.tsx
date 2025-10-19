@@ -7,7 +7,7 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "SmartFit - Твой персональный фитнес-помощник",
+  title: "SmartFit",
   description: "Персональные программы тренировок, дневник прогресса и библиотека упражнений",
   generator: "v0.app",
 }
