@@ -123,14 +123,24 @@ export function Header({ isLoggedIn }: HeaderProps) {
               </Link>
             ))}
             <div className="flex flex-col gap-2 mt-4">
-              <Link href="/login">
-                <Button className="w-full" variant="outline">
-                  Вход
-                </Button>
-              </Link>
-              <Link href="/programs">
-                <Button className="w-full">Начать</Button>
-              </Link>
+              {isLoggedIn ? (
+                <Link href="/profile">
+                  <Button className="w-full" variant="outline">
+                    Профиль
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button className="w-full" variant="outline">
+                      Вход
+                    </Button>
+                  </Link>
+                  <Link href="/programs">
+                    <Button className="w-full">Начать</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         )}
