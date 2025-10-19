@@ -72,7 +72,7 @@ const trainingTypeLabels: Record<string, string> = {
     gym: "В зале",
 }
 
-export default function ProgramDetailPage({ params }: { params: { id: string } }) {
+export default function ProgramDetailPage() {
     const { id } = useParams()
     const [program, setProgram] = useState<Program | null>(null)
     const [loading, setLoading] = useState(true)
