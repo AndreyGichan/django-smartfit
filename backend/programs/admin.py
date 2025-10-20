@@ -8,7 +8,7 @@ from django_smartfit.supabase_utils import upload_to_supabase
 class ProgramWorkoutExerciseInline(admin.TabularInline):
     model = ProgramWorkoutExercise
     extra = 1
-    fields = ("exercise", "sets", "reps", "weight")
+    fields = ("exercise", "sets", "reps_min", "reps_max", "weight")
     autocomplete_fields = ["exercise"]
 
 

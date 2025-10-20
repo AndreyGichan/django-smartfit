@@ -109,7 +109,7 @@ export default function ProgramDetailPage() {
                     day: workout.name || `День ${workout.order}`,
                     exercises: workout.exercises?.map((ex: any) => ({
                         name: ex.exercise.name,
-                        sets: `${ex.sets}x${ex.reps}`,
+                        sets: `${ex.sets} x ${ex.reps_min === ex.reps_max ? ex.reps_min : `${ex.reps_min}-${ex.reps_max}`}`,
                         rest: "-",
                         image_url: ex.exercise.image_url || "/placeholder.svg",
                     })) || [],

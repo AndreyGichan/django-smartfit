@@ -9,7 +9,7 @@ class ProgramWorkoutExerciseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProgramWorkoutExercise
-        fields = ['id', 'exercise', 'exercise_id', 'sets', 'reps', 'weight']
+        fields = ['id', 'exercise', 'exercise_id', 'sets', 'reps_min', 'reps_max', 'weight']
 
 
 class ProgramWorkoutSerializer(serializers.ModelSerializer):
@@ -73,7 +73,9 @@ class ProgramCreateSerializer(serializers.ModelSerializer):
                     workout=workout,
                     exercise_id=ex_data['exercise_id'],
                     sets=ex_data.get('sets'),
-                    reps=ex_data.get('reps'),
+                    # reps=ex_data.get('reps'),
+                    reps_min=ex_data.get('reps_min'),
+                    reps_max=ex_data.get('reps_max'),
                     weight=ex_data.get('weight')
                 )
 

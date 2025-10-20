@@ -39,11 +39,14 @@ class ProgramWorkoutExercise(models.Model):
     workout = models.ForeignKey(ProgramWorkout, related_name='exercises', on_delete=models.CASCADE)
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
     sets = models.PositiveIntegerField()
-    reps = models.PositiveIntegerField()
+    # reps = models.PositiveIntegerField()
+    reps_min = models.PositiveIntegerField()
+    reps_max = models.PositiveIntegerField()
     weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
     class Meta:
         unique_together = ('workout', 'exercise')
 
     def __str__(self):
-        return f"{self.exercise.name} ({self.sets}x{self.reps})"
+        reps_display = f"{self.reps_min}-{self.reps_max}" if self.reps_min != self.reps_max else f"{self.reps_min}"
+        return f"{self.exercise.name} ({self.sets}x{reps_display})"
