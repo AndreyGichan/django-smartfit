@@ -26,10 +26,17 @@ import { LoadingOverlay } from "@/components/LoadingOverlay"
 
 
 interface Exercise {
+    id: string
     name: string
+    description?: string
+    muscle_group?: string
+    difficulty?: string
+    technique?: string[] | null
+    equipment_needed?: string
     sets: string
     rest: string
     image_url?: string
+    video_url?: string | null
 }
 
 interface DaySchedule {
@@ -108,10 +115,17 @@ export default function ProgramDetailPage() {
                 const schedule = data.program_workouts?.map((workout: any) => ({
                     day: workout.name || `День ${workout.order}`,
                     exercises: workout.exercises?.map((ex: any) => ({
+                        id: ex.exercise.id,
                         name: ex.exercise.name,
+                        description: ex.exercise.description,
+                        muscle_group: ex.exercise.muscle_group,
+                        difficulty: ex.exercise.difficulty,
+                        technique: ex.exercise.technique,
+                        equipment_needed: ex.exercise.equipment_needed,
                         sets: `${ex.sets} x ${ex.reps_min === ex.reps_max ? ex.reps_min : `${ex.reps_min}-${ex.reps_max}`}`,
                         rest: "-",
                         image_url: ex.exercise.image_url || "/placeholder.svg",
+                        video_url: ex.exercise.video_url || null,
                     })) || [],
                 })) || []
 
