@@ -607,7 +607,7 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
                           <span>{ex.name}</span>
                           <span>
                             {ex.sets}x{ex.reps}
-                            {ex.weight !== undefined ? ` — ${ex.weight} кг` : ""}
+                            {ex.weight !== undefined && ex.weight !== null && ex.weight !== 0 ? ` — ${ex.weight} кг` : ""}
                             <Button size="icon" variant="ghost" onClick={() => handleEditExercise(ex, entry.id)}>
                               <Edit2 className="h-3 w-3" />
                             </Button>
@@ -649,7 +649,13 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
         </div>
       </div>
 
-      <Dialog open={isExerciseDialogOpen} onOpenChange={setIsExerciseDialogOpen}>
+      <Dialog
+        open={isExerciseDialogOpen}
+        onOpenChange={(open) => {
+          if (!open && document.activeElement?.tagName === "INPUT") return
+          setIsExerciseDialogOpen(open)
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
