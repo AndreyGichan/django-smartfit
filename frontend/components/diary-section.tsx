@@ -658,8 +658,20 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
       >
         <DialogContent
           className="max-w-md"
-          onPointerDownOutside={(e) => e.preventDefault()}
-          onInteractOutside={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => {
+            if (e.target instanceof Element && e.target.closest('input, textarea, select, button')) {
+              e.stopPropagation();
+              return;
+            }
+            e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (e.target instanceof Element && e.target.closest('input, textarea, select, button')) {
+              e.stopPropagation();
+              return;
+            }
+            e.preventDefault();
+          }}
         >
           <DialogHeader>
             <DialogTitle>
