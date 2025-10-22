@@ -656,7 +656,11 @@ export function DiarySection({ initialWorkouts, selectedProgram }: DiarySectionP
           setIsExerciseDialogOpen(open)
         }}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent
+          className="max-w-md"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>
               {isEditExerciseMode ? "Редактировать упражнение" : "Добавить упражнение"}
