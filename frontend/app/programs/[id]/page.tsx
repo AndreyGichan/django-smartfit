@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Target, Flame, Heart, Zap, Clock, TrendingUp, Calendar, ArrowLeft, Dumbbell, Timer, Play, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import apiService from "@/services/apiService"
-import ExerciseModal from "@/components/ExerciseModal"
+import ExerciseModal from "@/components/exercise-modal"
 import { getUserId } from "@/lib/actions"
 import {
     CustomAlertDialog,
@@ -22,7 +22,7 @@ import {
     CustomAlertDialogAction,
     CustomAlertDialogCancel,
 } from "@/components/ui/custom-alert-dialog"
-import { LoadingOverlay } from "@/components/LoadingOverlay"
+import { LoadingOverlay } from "@/components/loading-overlay"
 
 
 interface Exercise {

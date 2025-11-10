@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect, useTransition } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LoadingOverlay } from "./LoadingOverlay"
+import { LoadingOverlay } from "./loading-overlay"
 
 interface HeaderProps {
   isLoggedIn: boolean;

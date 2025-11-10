@@ -8,7 +8,7 @@ import Link from "next/link"
 import { getUserId } from "@/lib/actions"
 import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { LoadingOverlay } from "@/components/LoadingOverlay"
+import { LoadingOverlay } from "@/components/loading-overlay"
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)

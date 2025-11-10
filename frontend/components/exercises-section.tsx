@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Play, Info } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import ExerciseModal from "./ExerciseModal"
+import ExerciseModal from "./exercise-modal"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 
@@ -51,7 +51,7 @@ export function ExercisesSection({ initialData }: { initialData: Record<string, 
     )
   }
 
-   const filteredExercises = Object.fromEntries(
+  const filteredExercises = Object.fromEntries(
     Object.entries(exercises).map(([group, list]) => [
       group,
       list.filter((ex) =>

@@ -5,7 +5,7 @@ import { ArrowRight, TrendingUp, Calendar, Zap, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { LoadingOverlay } from "./LoadingOverlay"
+import { LoadingOverlay } from "./loading-overlay"
 
 export function Hero() {
   const [mounted, setMounted] = useState(false)
